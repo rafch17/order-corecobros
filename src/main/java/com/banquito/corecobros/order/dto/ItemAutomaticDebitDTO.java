@@ -1,0 +1,98 @@
+package com.banquito.corecobros.order.dto;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+
+public class ItemAutomaticDebitDTO {
+    private Integer code;
+    private Integer orderCode;
+    private String identification;
+    private String debtorName;
+    private String debitAccount;
+    private BigDecimal debitAmount;
+    private String debitFrecuency;
+    private LocalDate startDate;
+    private LocalDate endDate;
+    private String status;
+
+    public Integer getCode() {
+        return code;
+    }
+
+    public void setCode(Integer code) {
+        this.code = code;
+    }
+
+    public Integer getOrderCode() {
+        return orderCode;
+    }
+
+    public void setOrderCode(Integer orderCode) {
+        this.orderCode = orderCode;
+    }
+
+    public String getIdentification() {
+        return identification;
+    }
+
+    public void setIdentification(String identification) {
+        this.identification = identification;
+    }
+
+    public String getDebtorName() {
+        return debtorName;
+    }
+
+    public void setDebtorName(String debtorName) {
+        this.debtorName = debtorName;
+    }
+
+    public String getDebitAccount() {
+        return debitAccount;
+    }
+
+    public void setDebitAccount(String debitAccount) {
+        this.debitAccount = debitAccount;
+    }
+
+    public BigDecimal getDebitAmount() {
+        return debitAmount;
+    }
+
+    public void setDebitAmount(BigDecimal debitAmount) {
+        this.debitAmount = debitAmount;
+    }
+
+    public String getDebitFrecuency() {
+        return debitFrecuency;
+    }
+
+    public void setDebitFrecuency(String debitFrecuency) {
+        this.debitFrecuency = debitFrecuency;
+    }
+
+    public LocalDate getStartDate() {
+        return startDate;
+    }
+
+    public void setStartDate(LocalDate startDate) {
+        this.startDate = startDate;
+    }
+
+    public LocalDate getEndDate() {
+        return endDate;
+    }
+
+    public void setEndDate(LocalDate endDate) {
+        this.endDate = endDate;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+}

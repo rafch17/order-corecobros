@@ -1,0 +1,46 @@
+package com.banquito.corecobros.order.controller;
+
+import java.util.List;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.banquito.corecobros.order.dto.ItemAutomaticDebitDTO;
+import com.banquito.corecobros.order.service.ItemAutomaticDebitService;
+
+@RestController
+@RequestMapping("/api/v1/item-debitAuto")
+public class ItemAutomaticDebitController {
+    private final ItemAutomaticDebitService itemAutomaticDebitService;
+
+    public ItemAutomaticDebitController(ItemAutomaticDebitService itemAutomaticDebitService) {
+        this.itemAutomaticDebitService = itemAutomaticDebitService;
+    }
+
+    @GetMapping
+    public ResponseEntity<List<ItemAutomaticDebitDTO>> getAllItemAutomaticDebits() {
+        return ResponseEntity.ok(this.itemAutomaticDebitService.obtainAllItemAutomaticDebits());
+    }
+
+    @PostMapping
+    public ResponseEntity<Void> createItemAutomaticDebit(ItemAutomaticDebitDTO itemAutomaticDebitDTO) {
+        try {
+            this.itemAutomaticDebitService.createItemAutomaticDebit(itemAutomaticDebitDTO);
+            return ResponseEntity.ok().build();
+        } catch (RuntimeException rte) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<ItemAutomaticDebitDTO> getItemAutomaticDebitById(Integer id) {
+        try {
+            return ResponseEntity.ok(this.itemAutomaticDebitService.obtainItemAutomaticDebitById(id));
+        } catch (RuntimeException rte) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+}
