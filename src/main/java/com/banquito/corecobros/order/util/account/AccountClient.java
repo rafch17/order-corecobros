@@ -16,4 +16,7 @@ public interface AccountClient {
 
     @PostMapping("/accounts/{accountNumber}/debit")
     void debitAccount(@PathVariable("accountNumber") String accountNumber, @RequestBody BigDecimal amount);
+
+    @GetMapping("/accounts/{counterpart}/verify/{debtorName}")
+    boolean verifyCounterpart(@PathVariable("counterpart") String counterpart, @PathVariable("debtorName") String debtorName);
 }

@@ -49,9 +49,9 @@ public class ItemCollectionController {
         }
     }
 
-    @GetMapping("/item-collections/active")
-    public ResponseEntity<List<ItemCollectionDTO>> getItemCollectionsByStatus() {
-        return ResponseEntity.ok(this.itemCollectionService.obtainItemCollectionsByStatus());
+    @GetMapping("/item-collections/{status}")
+    public ResponseEntity<List<ItemCollectionDTO>> getItemCollectionsByStatus(String status) {
+        return ResponseEntity.ok(this.itemCollectionService.obtainItemCollectionsByStatus(status));
     }
 
     @PostMapping("/upload")

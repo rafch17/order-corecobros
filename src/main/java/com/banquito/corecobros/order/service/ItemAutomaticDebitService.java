@@ -66,6 +66,11 @@ public class ItemAutomaticDebitService {
         this.itemAutomaticDebitRepository.save(itemAutomaticDebit);
     }
 
+    public List<ItemAutomaticDebitDTO> obtainItemAutomaticDebitsByStatus(String status){
+        List<ItemAutomaticDebit> itemAutomaticDebits = this.itemAutomaticDebitRepository.findByStatus(status);
+        return itemAutomaticDebits.stream().map(s -> this.mapper.toDTO(s)).collect(Collectors.toList());
+    }
+
     public void processCsvFile(MultipartFile file) throws IOException {
         try (InputStreamReader reader = new InputStreamReader(file.getInputStream());
                 CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT.builder().setHeader().build())) {
@@ -100,26 +105,29 @@ public class ItemAutomaticDebitService {
 
     }
     @Transactional
-    public void processAutomaticDebit(ItemAutomaticDebitDTO item) {
-        BigDecimal accountBalance = accountClient.getAccountBalance(item.getDebitAccount());
+    public void processAutomaticDebit() {
+        List<ItemAutomaticDebitDTO> activItemAutomaticDebit = this.obtainItemAutomaticDebitsByStatus("ACT");
+        for (ItemAutomaticDebitDTO item : activItemAutomaticDebit){
+            BigDecimal accountBalance = accountClient.getAccountBalance(item.getDebitAccount());
 
-        AutomaticDebitPaymentRecordDTO record = new AutomaticDebitPaymentRecordDTO();
-        record.setCode(item.getCode());
-        record.setPaymentDate(LocalDateTime.now());
-        record.setItemAutomaticDebitCode(item.getCode());
-        record.setDebitAmount(item.getDebitAmount());
-
-        if (accountBalance.compareTo(item.getDebitAmount()) >= 0) {
-            accountClient.debitAccount(item.getDebitAccount(), item.getDebitAmount());
-            record.setOutstandingBalance(BigDecimal.ZERO);
-            record.setStatus("PAG");
-        } else {
-            accountClient.debitAccount(item.getDebitAccount(), accountBalance);
-            record.setOutstandingBalance(item.getDebitAmount().subtract(accountBalance));
-            record.setStatus("PAR");
+            AutomaticDebitPaymentRecordDTO record = new AutomaticDebitPaymentRecordDTO();
+            record.setItemAutomaticDebitCode(item.getCode());
+            record.setDebitAmount(item.getDebitAmount());
+            record.setPaymentDate(LocalDateTime.now());
+    
+            if (accountBalance.compareTo(item.getDebitAmount()) >= 0) {
+                accountClient.debitAccount(item.getDebitAccount(), item.getDebitAmount());
+                record.setOutstandingBalance(BigDecimal.ZERO);
+                record.setPaymentType("TOT");
+                record.setStatus("PAG");
+            } else {
+                accountClient.debitAccount(item.getDebitAccount(), accountBalance);
+                record.setOutstandingBalance(item.getDebitAmount().subtract(accountBalance));
+                record.setPaymentType("PAR");
+            }
+    
+            this.paymentRecordService.createAutomaticDebitPaymentRecord(record);
         }
-
-        this.paymentRecordService.createAutomaticDebitPaymentRecord(record);
     }
 
     public List<ItemAutomaticDebit> getItemAutomaticDebitsByOrderId(Integer orderId) {

@@ -9,4 +9,5 @@ import com.banquito.corecobros.order.model.ItemAutomaticDebit;
 @Repository
 public interface ItemAutomaticDebitRepository extends JpaRepository<ItemAutomaticDebit, Integer> {
     List<ItemAutomaticDebit> findByOrderId(Integer orderId);
+    List<ItemAutomaticDebit> findByStatus(String status);
 }
