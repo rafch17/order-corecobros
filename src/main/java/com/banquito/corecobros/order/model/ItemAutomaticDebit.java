@@ -31,6 +31,8 @@ public class ItemAutomaticDebit {
     private Integer code;
     @Column(name = "ORDER_ID")
     private Integer orderCode;
+    @Column(name = "UNIQUE_ID", length = 16)
+    private String uniqueId;
     @Column(name = "IDENTIFICATION", length = 13, nullable = false)
     private String identification;
     @Column(name = "DEBTOR_NAME", length = 100, nullable = false)
@@ -39,14 +41,6 @@ public class ItemAutomaticDebit {
     private String debitAccount;
     @Column(name = "DEBIT_AMOUNT", precision = 17, scale = 2, nullable = false)
     private BigDecimal debitAmount;
-    @Column(name = "DEBIT_FRECUENCY", length = 10, nullable = false)
-    private String debitFrecuency;
-    @Temporal(TemporalType.DATE)
-    @Column(name = "START_DATE", nullable = false)
-    private LocalDate startDate;
-    @Temporal(TemporalType.DATE)
-    @Column(name = "END_DATE", nullable = false)
-    private LocalDate endDate;
     @Column(name = "STATUS", length = 3, nullable = false)
     private String status;
 

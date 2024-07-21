@@ -33,8 +33,8 @@ public class CollectionPaymentRecord {
     private Integer itemCollectionCode;
     @Column(name = "ITEM_COMMISSION_ID")
     private Integer itemCommissionCode;
-    @Column(name = "OWED_PAYMENT", precision = 17, scale = 2)
-    private BigDecimal owedPayment;
+    @Column(name = "COLLECTION_AMOUNT", precision = 17, scale = 2)
+    private BigDecimal collectionAmount;
     @Column(name = "PAYMENT_TYPE", length = 3)
     private String paymentType;
     @Temporal(TemporalType.TIMESTAMP)
@@ -44,8 +44,6 @@ public class CollectionPaymentRecord {
     private BigDecimal outstandingBalance;
     @Column(name = "CHANNEL", length = 3)
     private String channel;
-    @Column(name = "STATUS", length = 3)
-    private String status;
 
     @ManyToOne
     @JoinColumn(name = "ITEM_COLLECTION_ID", referencedColumnName = "ITEM_COLLECTION_ID", insertable = false, updatable = false)

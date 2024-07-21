@@ -27,6 +27,8 @@ public class Order {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ORDER_ID", nullable = false)
     private Integer code;
+    @Column(name = "UNIQUE_ID", length = 16)
+    private String uniqueId;
     @Column(name = "SERVICE_ID", nullable = false)
     private Integer serviceCode;
     @Temporal(TemporalType.DATE)
@@ -41,8 +43,6 @@ public class Order {
     private String description;
     @Column(name = "STATUS", length = 3, nullable = false)
     private String status;
-    @Column(name = "TYPE", length = 3)
-    private String type;
 
     public Order(Integer code) {
         this.code = code;

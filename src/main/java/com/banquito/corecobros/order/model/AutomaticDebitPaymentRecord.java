@@ -11,6 +11,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -31,9 +33,14 @@ public class AutomaticDebitPaymentRecord {
     private Integer itemAutomaticDebitCode;
     @Column(name = "ITEM_COMMISSION_ID")
     private Integer itemCommissionCode;
-    @Column(name = "OWED_PAYMENT", precision = 17, scale = 2)
-    private BigDecimal owedPayment;
+    @Column(name = "OUTSTANDING_BALANCE", precision = 17, scale = 2)
+    private BigDecimal outstandingBalance;
     @Column(name = "PAYMENT_TYPE", length = 3)
+    private String paymentType;
+    @Column(name = "DEBIT_AMOUNT")
+    private BigDecimal debitAmount;
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "PAYMENT_DATE")
     private LocalDateTime paymentDate;
     @Column(name = "STATUS", length = 3)
     private String status;

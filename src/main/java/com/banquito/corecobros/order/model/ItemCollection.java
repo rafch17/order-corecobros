@@ -31,18 +31,14 @@ public class ItemCollection {
     private Integer code;
     @Column(name = "ORDER_ID")
     private Integer orderCode;
+    @Column(name = "UNIQUE_ID", length = 16)
+    private String uniqueId;
     @Column(name = "DEBTOR_NAME", length = 100, nullable = false)
     private String debtorName;
     @Column(name = "COUNTERPART", length = 13, nullable = false)
     private String counterpart;
     @Column(name = "COLLECTION_AMOUNT", precision = 17, scale = 2, nullable = false)
     private BigDecimal collectionAmount;
-    @Temporal(TemporalType.DATE)
-    @Column(name = "START_DATE", nullable = false)
-    private LocalDate startDate;
-    @Temporal(TemporalType.DATE)
-    @Column(name = "END_DATE", nullable = false)
-    private LocalDate endDate;
     @Column(name = "STATUS", length = 3, nullable = false)
     private String status;
 
