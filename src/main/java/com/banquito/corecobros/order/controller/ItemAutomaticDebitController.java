@@ -1,14 +1,19 @@
 package com.banquito.corecobros.order.controller;
 
+import java.io.IOException;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.banquito.corecobros.order.dto.ItemAutomaticDebitDTO;
+import com.banquito.corecobros.order.model.ItemAutomaticDebit;
 import com.banquito.corecobros.order.service.ItemAutomaticDebitService;
 
 @RestController
@@ -42,5 +47,21 @@ public class ItemAutomaticDebitController {
         } catch (RuntimeException rte) {
             return ResponseEntity.notFound().build();
         }
+    }
+
+    @PostMapping("/upload")
+    public ResponseEntity<Void> uploadCsvFile(@RequestParam("file") MultipartFile file) {
+        try {
+            itemAutomaticDebitService.processCsvFile(file);
+            return ResponseEntity.ok().build();
+        } catch (IOException e) {
+            return ResponseEntity.status(500).build();
+        }
+    }
+
+    @GetMapping("/by-order/{orderId}")
+    public ResponseEntity<List<ItemAutomaticDebit>> getItemAutomaticDebitsByOrderId(@PathVariable Integer orderId) {
+        List<ItemAutomaticDebit> items = itemAutomaticDebitService.getItemAutomaticDebitsByOrderId(orderId);
+        return ResponseEntity.ok(items);
     }
 }

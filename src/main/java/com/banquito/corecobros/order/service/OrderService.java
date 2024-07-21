@@ -1,5 +1,8 @@
 package com.banquito.corecobros.order.service;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -16,7 +19,6 @@ import lombok.extern.slf4j.Slf4j;
 public class OrderService {
     private final OrderRepository orderRepository;
     private final OrderMapper orderMapper;
-
 
     public OrderService(OrderRepository orderRepository, OrderMapper orderMapper) {
         this.orderRepository = orderRepository;
@@ -43,11 +45,30 @@ public class OrderService {
         return this.orderMapper.toDTO(order);
     }
 
-    
+    public void expireOrders() {
+        List<Order> orders = orderRepository.findAll();
+        LocalDateTime now = LocalDateTime.now();
+        LocalDate currentDate = now.toLocalDate(); 
 
+        for (Order order : orders) {
+            LocalDate endDate = order.getEndDate(); 
 
+            if (endDate.isBefore(currentDate) && !order.getStatus().equals("EXP")) {
+                order.setStatus("EXP");
+                orderRepository.save(order);
+            }
+        }
+        
+    }
 
-    
+    public List<Order> getOrdersByServiceCompanyAndDateRange(Integer serviceId, Integer companyId, LocalDate startDate, LocalDate endDate) {
+        return orderRepository.findByServiceIdAndCompanyIdAndDateBetween(serviceId, companyId, startDate, endDate);
+    }
 
-
+    public Order updateOrderStatus(Integer orderId, String status) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("No se encontró la orden con el ID " + orderId));
+        order.setStatus(status);
+        return orderRepository.save(order);
+    }
 }

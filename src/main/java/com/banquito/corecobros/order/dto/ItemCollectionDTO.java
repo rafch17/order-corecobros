@@ -1,7 +1,6 @@
 package com.banquito.corecobros.order.dto;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 
 public class ItemCollectionDTO {
     private Integer code;
@@ -10,7 +9,7 @@ public class ItemCollectionDTO {
     private String debtorName;
     private String counterpart;
     private BigDecimal collectionAmount;
-    private LocalDate startDate;
+    private String status;
 
     public Integer getCode() {
         return code;
@@ -60,12 +59,12 @@ public class ItemCollectionDTO {
         this.collectionAmount = collectionAmount;
     }
 
-    public LocalDate getStartDate() {
-        return startDate;
+    public String getStatus() {
+        return status;
     }
 
-    public void setStartDate(LocalDate startDate) {
-        this.startDate = startDate;
+    public void setStatus(String status) {
+        this.status = status;
     }
 
 }
