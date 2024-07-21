@@ -7,12 +7,11 @@ public class CollectionPaymentRecordDTO {
     private Integer code;
     private Integer itemCollectionCode;
     private Integer itemCommissionCode;
-    private BigDecimal owedPayment;
+    private BigDecimal collectionAmount;
     private String paymentType;
     private LocalDateTime paymentDate;
     private BigDecimal outstandingBalance;
     private String channel;
-    private String status;
 
     public Integer getCode() {
         return code;
@@ -38,12 +37,12 @@ public class CollectionPaymentRecordDTO {
         this.itemCommissionCode = itemCommissionCode;
     }
 
-    public BigDecimal getOwedPayment() {
-        return owedPayment;
+    public BigDecimal getCollectionAmount() {
+        return collectionAmount;
     }
 
-    public void setOwedPayment(BigDecimal owedPayment) {
-        this.owedPayment = owedPayment;
+    public void setCollectionAmount(BigDecimal collectionAmount) {
+        this.collectionAmount = collectionAmount;
     }
 
     public String getPaymentType() {
@@ -76,14 +75,6 @@ public class CollectionPaymentRecordDTO {
 
     public void setChannel(String channel) {
         this.channel = channel;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
     }
 
 }

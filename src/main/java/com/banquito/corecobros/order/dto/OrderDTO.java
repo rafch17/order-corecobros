@@ -5,6 +5,8 @@ import java.time.LocalDate;
 
 public class OrderDTO {
     private Integer code;
+    private String uniqueCode;
+    private Integer accountCode;
     private Integer serviceCode;
     private LocalDate startDate;
     private LocalDate endDate;
@@ -19,6 +21,22 @@ public class OrderDTO {
 
     public void setCode(Integer code) {
         this.code = code;
+    }
+
+    public String getUniqueCode() {
+        return uniqueCode;
+    }
+
+    public void setUniqueCode(String uniqueCode) {
+        this.uniqueCode = uniqueCode;
+    }
+
+    public Integer getAccountCode() {
+        return accountCode;
+    }
+
+    public void setAccountCode(Integer accountCode) {
+        this.accountCode = accountCode;
     }
 
     public Integer getServiceCode() {

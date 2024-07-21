@@ -1,18 +1,15 @@
 package com.banquito.corecobros.order.dto;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 
 public class ItemAutomaticDebitDTO {
     private Integer code;
     private Integer orderCode;
+    private String uniqueCode;
     private String identification;
     private String debtorName;
     private String debitAccount;
     private BigDecimal debitAmount;
-    private String debitFrecuency;
-    private LocalDate startDate;
-    private LocalDate endDate;
     private String status;
 
     public Integer getCode() {
@@ -29,6 +26,14 @@ public class ItemAutomaticDebitDTO {
 
     public void setOrderCode(Integer orderCode) {
         this.orderCode = orderCode;
+    }
+
+    public String getUniqueCode() {
+        return uniqueCode;
+    }
+
+    public void setUniqueCode(String uniqueCode) {
+        this.uniqueCode = uniqueCode;
     }
 
     public String getIdentification() {
@@ -61,30 +66,6 @@ public class ItemAutomaticDebitDTO {
 
     public void setDebitAmount(BigDecimal debitAmount) {
         this.debitAmount = debitAmount;
-    }
-
-    public String getDebitFrecuency() {
-        return debitFrecuency;
-    }
-
-    public void setDebitFrecuency(String debitFrecuency) {
-        this.debitFrecuency = debitFrecuency;
-    }
-
-    public LocalDate getStartDate() {
-        return startDate;
-    }
-
-    public void setStartDate(LocalDate startDate) {
-        this.startDate = startDate;
-    }
-
-    public LocalDate getEndDate() {
-        return endDate;
-    }
-
-    public void setEndDate(LocalDate endDate) {
-        this.endDate = endDate;
     }
 
     public String getStatus() {

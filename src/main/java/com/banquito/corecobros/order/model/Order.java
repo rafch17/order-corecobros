@@ -31,6 +31,8 @@ public class Order {
     private String uniqueId;
     @Column(name = "SERVICE_ID", nullable = false)
     private Integer serviceCode;
+    @Column(name = "ACCOUNT_ID")
+    private Integer accountCode;
     @Temporal(TemporalType.DATE)
     @Column(name = "START_DATE", nullable = false)
     private LocalDate startDate;

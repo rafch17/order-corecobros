@@ -6,12 +6,11 @@ import java.time.LocalDate;
 public class ItemCollectionDTO {
     private Integer code;
     private Integer orderCode;
+    private String uniqueCode;
     private String debtorName;
     private String counterpart;
     private BigDecimal collectionAmount;
     private LocalDate startDate;
-    private LocalDate endDate;
-    private String status;
 
     public Integer getCode() {
         return code;
@@ -27,6 +26,14 @@ public class ItemCollectionDTO {
 
     public void setOrderCode(Integer orderCode) {
         this.orderCode = orderCode;
+    }
+
+    public String getUniqueCode() {
+        return uniqueCode;
+    }
+
+    public void setUniqueCode(String uniqueCode) {
+        this.uniqueCode = uniqueCode;
     }
 
     public String getDebtorName() {
@@ -59,22 +66,6 @@ public class ItemCollectionDTO {
 
     public void setStartDate(LocalDate startDate) {
         this.startDate = startDate;
-    }
-
-    public LocalDate getEndDate() {
-        return endDate;
-    }
-
-    public void setEndDate(LocalDate endDate) {
-        this.endDate = endDate;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
     }
 
 }
