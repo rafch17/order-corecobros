@@ -28,11 +28,11 @@ public class AutomaticDebitPaymentRecord {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "PAYMENT_RECORD_ID", nullable = false)
-    private Integer code;
+    private Integer id;
     @Column(name = "ITEM_AUTOMATIC_DEBIT_ID")
-    private Integer itemAutomaticDebitCode;
+    private Integer itemAutomaticDebitId;
     @Column(name = "ITEM_COMMISSION_ID")
-    private Integer itemCommissionCode;
+    private Integer itemCommissionId;
     @Column(name = "OUTSTANDING_BALANCE", precision = 17, scale = 2)
     private BigDecimal outstandingBalance;
     @Column(name = "PAYMENT_TYPE", length = 3)
@@ -49,15 +49,15 @@ public class AutomaticDebitPaymentRecord {
     @JoinColumn(name = "ITEM_AUTOMATIC_DEBIT_ID", referencedColumnName = "ITEM_AUTOMATIC_DEBIT_ID", insertable = false, updatable = false)
     private ItemAutomaticDebit itemAutomaticDebit;
 
-    public AutomaticDebitPaymentRecord(Integer code) {
-        this.code = code;
+    public AutomaticDebitPaymentRecord(Integer id) {
+        this.id = id;
     }
 
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((code == null) ? 0 : code.hashCode());
+        result = prime * result + ((id == null) ? 0 : id.hashCode());
         return result;
     }
 
@@ -70,12 +70,14 @@ public class AutomaticDebitPaymentRecord {
         if (getClass() != obj.getClass())
             return false;
         AutomaticDebitPaymentRecord other = (AutomaticDebitPaymentRecord) obj;
-        if (code == null) {
-            if (other.code != null)
+        if (id == null) {
+            if (other.id != null)
                 return false;
-        } else if (!code.equals(other.code))
+        } else if (!id.equals(other.id))
             return false;
         return true;
     }
+
+    
 
 }

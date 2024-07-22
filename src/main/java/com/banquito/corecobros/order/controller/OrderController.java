@@ -1,6 +1,5 @@
 package com.banquito.corecobros.order.controller;
 
-import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
@@ -55,18 +54,6 @@ public class OrderController {
     public ResponseEntity<Void> expireOrders() {
         orderService.expireOrders();
         return ResponseEntity.ok().build();
-    }
-
-    @GetMapping("/report")
-    public ResponseEntity<List<Order>> getOrdersByServiceCompanyAndDateRange(
-            @RequestParam Integer serviceId,
-            @RequestParam Integer companyId,
-            @RequestParam String startDate,
-            @RequestParam String endDate) {
-        LocalDate start = LocalDate.parse(startDate);
-        LocalDate end = LocalDate.parse(endDate);
-        List<Order> orders = orderService.getOrdersByServiceCompanyAndDateRange(serviceId, companyId, start, end);
-        return ResponseEntity.ok(orders);
     }
 
     @PutMapping("/{orderId}/status")

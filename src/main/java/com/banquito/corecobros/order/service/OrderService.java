@@ -25,8 +25,8 @@ public class OrderService {
     }
 
     public void createOrder(OrderDTO dto){
-        if(dto.getCode()!=null && orderRepository.existsById(dto.getCode())){
-            throw new RuntimeException("El ID " + dto.getCode() + " ya existe.");
+        if(dto.getOrderId()!=null && orderRepository.existsById(dto.getOrderId())){
+            throw new RuntimeException("El ID " + dto.getOrderId() + " ya existe.");
         }
         Order order = this.orderMapper.toPersistence(dto);
         Order savedOrder = this.orderRepository.save(order);
@@ -58,10 +58,6 @@ public class OrderService {
             }
         }
         
-    }
-
-    public List<Order> getOrdersByServiceCompanyAndDateRange(Integer serviceId, Integer companyId, LocalDate startDate, LocalDate endDate) {
-        return orderRepository.findByServiceIdAndCompanyIdAndDateBetween(serviceId, companyId, startDate, endDate);
     }
 
     public Order updateOrderStatus(Integer orderId, String status) {

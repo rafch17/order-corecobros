@@ -25,9 +25,9 @@ public class ItemCollection {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ITEM_COLLECTION_ID", nullable = false)
-    private Integer code;
+    private Integer id;
     @Column(name = "ORDER_ID")
-    private Integer orderCode;
+    private Integer orderId;
     @Column(name = "UNIQUE_ID", length = 16)
     private String uniqueId;
     @Column(name = "DEBTOR_NAME", length = 100, nullable = false)
@@ -43,15 +43,15 @@ public class ItemCollection {
     @JoinColumn(name = "ORDER_ID", referencedColumnName = "ORDER_ID",insertable = false, updatable = false)
     private Order order;
 
-    public ItemCollection(Integer code) {
-        this.code = code;
+    public ItemCollection(Integer id) {
+        this.id = id;
     }
 
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((code == null) ? 0 : code.hashCode());
+        result = prime * result + ((id == null) ? 0 : id.hashCode());
         return result;
     }
 
@@ -64,10 +64,10 @@ public class ItemCollection {
         if (getClass() != obj.getClass())
             return false;
         ItemCollection other = (ItemCollection) obj;
-        if (code == null) {
-            if (other.code != null)
+        if (id == null) {
+            if (other.id != null)
                 return false;
-        } else if (!code.equals(other.code))
+        } else if (!id.equals(other.id))
             return false;
         return true;
     }

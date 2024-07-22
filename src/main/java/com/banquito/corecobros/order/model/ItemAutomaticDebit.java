@@ -25,9 +25,9 @@ public class ItemAutomaticDebit {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ITEM_AUTOMATIC_DEBIT_ID", nullable = false)
-    private Integer code;
+    private Integer id;
     @Column(name = "ORDER_ID")
-    private Integer orderCode;
+    private Integer orderId;
     @Column(name = "UNIQUE_ID", length = 16)
     private String uniqueId;
     @Column(name = "IDENTIFICATION", length = 13, nullable = false)
@@ -45,15 +45,15 @@ public class ItemAutomaticDebit {
     @JoinColumn(name = "ORDER_ID", referencedColumnName = "ORDER_ID",insertable = false, updatable = false)
     private Order order;
 
-    public ItemAutomaticDebit(Integer code) {
-        this.code = code;
+    public ItemAutomaticDebit(Integer id) {
+        this.id = id;
     }
 
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((code == null) ? 0 : code.hashCode());
+        result = prime * result + ((id == null) ? 0 : id.hashCode());
         return result;
     }
 
@@ -66,13 +66,12 @@ public class ItemAutomaticDebit {
         if (getClass() != obj.getClass())
             return false;
         ItemAutomaticDebit other = (ItemAutomaticDebit) obj;
-        if (code == null) {
-            if (other.code != null)
+        if (id == null) {
+            if (other.id != null)
                 return false;
-        } else if (!code.equals(other.code))
+        } else if (!id.equals(other.id))
             return false;
         return true;
     }
-
     
 }

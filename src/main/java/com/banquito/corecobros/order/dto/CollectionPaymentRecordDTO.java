@@ -4,77 +4,64 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 public class CollectionPaymentRecordDTO {
-    private Integer code;
-    private Integer itemCollectionCode;
-    private Integer itemCommissionCode;
+    private Integer id;
+    private Integer itemCollectionId;
+    private Integer itemCommissionId;
     private BigDecimal collectionAmount;
     private String paymentType;
     private LocalDateTime paymentDate;
     private BigDecimal outstandingBalance;
     private String channel;
-
-    public Integer getCode() {
-        return code;
+    
+    public Integer getId() {
+        return id;
     }
-
-    public void setCode(Integer code) {
-        this.code = code;
+    public void setId(Integer id) {
+        this.id = id;
     }
-
-    public Integer getItemCollectionCode() {
-        return itemCollectionCode;
+    public Integer getItemCollectionId() {
+        return itemCollectionId;
     }
-
-    public void setItemCollectionCode(Integer itemCollectionCode) {
-        this.itemCollectionCode = itemCollectionCode;
+    public void setItemCollectionId(Integer itemCollectionId) {
+        this.itemCollectionId = itemCollectionId;
     }
-
-    public Integer getItemCommissionCode() {
-        return itemCommissionCode;
+    public Integer getItemCommissionId() {
+        return itemCommissionId;
     }
-
-    public void setItemCommissionCode(Integer itemCommissionCode) {
-        this.itemCommissionCode = itemCommissionCode;
+    public void setItemCommissionId(Integer itemCommissionId) {
+        this.itemCommissionId = itemCommissionId;
     }
-
     public BigDecimal getCollectionAmount() {
         return collectionAmount;
     }
-
     public void setCollectionAmount(BigDecimal collectionAmount) {
         this.collectionAmount = collectionAmount;
     }
-
     public String getPaymentType() {
         return paymentType;
     }
-
     public void setPaymentType(String paymentType) {
         this.paymentType = paymentType;
     }
-
     public LocalDateTime getPaymentDate() {
         return paymentDate;
     }
-
     public void setPaymentDate(LocalDateTime paymentDate) {
         this.paymentDate = paymentDate;
     }
-
     public BigDecimal getOutstandingBalance() {
         return outstandingBalance;
     }
-
     public void setOutstandingBalance(BigDecimal outstandingBalance) {
         this.outstandingBalance = outstandingBalance;
     }
-
     public String getChannel() {
         return channel;
     }
-
     public void setChannel(String channel) {
         this.channel = channel;
     }
+
+    
 
 }

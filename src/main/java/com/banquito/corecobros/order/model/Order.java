@@ -21,18 +21,18 @@ import lombok.ToString;
 @Setter
 @ToString
 @Entity
-@Table(name = "\"ORDER\"", schema = "public")
+@Table(name = "\"ORDER\"")
 public class Order {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ORDER_ID", nullable = false)
-    private Integer code;
+    private Integer orderId;
     @Column(name = "UNIQUE_ID", length = 16)
     private String uniqueId;
     @Column(name = "SERVICE_ID", nullable = false)
-    private Integer serviceCode;
+    private Integer serviceId;
     @Column(name = "ACCOUNT_ID")
-    private Integer accountCode;
+    private Integer accountId;
     @Temporal(TemporalType.DATE)
     @Column(name = "START_DATE", nullable = false)
     private LocalDate startDate;
@@ -45,16 +45,16 @@ public class Order {
     private String description;
     @Column(name = "STATUS", length = 3, nullable = false)
     private String status;
-
-    public Order(Integer code) {
-        this.code = code;
+    
+    public Order(Integer orderId) {
+        this.orderId = orderId;
     }
 
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((code == null) ? 0 : code.hashCode());
+        result = prime * result + ((orderId == null) ? 0 : orderId.hashCode());
         return result;
     }
 
@@ -67,12 +67,14 @@ public class Order {
         if (getClass() != obj.getClass())
             return false;
         Order other = (Order) obj;
-        if (code == null) {
-            if (other.code != null)
+        if (orderId == null) {
+            if (other.orderId != null)
                 return false;
-        } else if (!code.equals(other.code))
+        } else if (!orderId.equals(other.orderId))
             return false;
         return true;
     }
+
+    
 
 }
