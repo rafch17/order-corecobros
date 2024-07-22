@@ -29,6 +29,7 @@ public class OrderService {
             throw new RuntimeException("El ID " + dto.getOrderId() + " ya existe.");
         }
         Order order = this.orderMapper.toPersistence(dto);
+        order.setStatus("PEN");
         Order savedOrder = this.orderRepository.save(order);
         log.info("Se creo la orden: {}", savedOrder);
     }
@@ -60,10 +61,22 @@ public class OrderService {
         
     }
 
-    public Order updateOrderStatus(Integer orderId, String status) {
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("No se encontró la orden con el ID " + orderId));
-        order.setStatus(status);
-        return orderRepository.save(order);
+    public OrderDTO updateOrderStatus(String uniqueId, String status) {
+        Order order = orderRepository.findByUniqueId(uniqueId);
+        if(order != null){
+            log.info("Se va a cambiar el status a la orden");
+            order.setStatus(status);
+            orderRepository.save(order);
+            return this.orderMapper.toDTO(order);
+        }
+        return null;
     }
+
+    public List<OrderDTO> getOrdersByServiceIdAndAccountIdAndDateRange(
+        Integer serviceId, Integer accountId, LocalDate startDate, LocalDate endDate) {
+        List<Order> orders = orderRepository.findByServiceIdAndAccountIdAndDateRange(
+            serviceId, accountId, startDate, endDate);
+        return orders.stream().map(s -> this.orderMapper.toDTO(s)).collect(Collectors.toList());
+    }
+
 }

@@ -13,11 +13,10 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.banquito.corecobros.order.dto.ItemAutomaticDebitDTO;
-import com.banquito.corecobros.order.model.ItemAutomaticDebit;
 import com.banquito.corecobros.order.service.ItemAutomaticDebitService;
 
 @RestController
-@RequestMapping("/api/v1/item-debitAuto")
+@RequestMapping("/api/v1/debitAuto")
 public class ItemAutomaticDebitController {
     private final ItemAutomaticDebitService itemAutomaticDebitService;
 
@@ -60,8 +59,8 @@ public class ItemAutomaticDebitController {
     }
 
     @GetMapping("/by-order/{orderId}")
-    public ResponseEntity<List<ItemAutomaticDebit>> getItemAutomaticDebitsByOrderId(@PathVariable Integer orderId) {
-        List<ItemAutomaticDebit> items = itemAutomaticDebitService.getItemAutomaticDebitsByOrderId(orderId);
+    public ResponseEntity<List<ItemAutomaticDebitDTO>> getItemAutomaticDebitsByOrderId(@PathVariable Integer orderId) {
+        List<ItemAutomaticDebitDTO> items = itemAutomaticDebitService.getItemAutomaticDebitsByOrderId(orderId);
         return ResponseEntity.ok(items);
     }
 }

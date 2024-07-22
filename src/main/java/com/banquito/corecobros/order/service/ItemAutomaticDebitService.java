@@ -166,8 +166,9 @@ public class ItemAutomaticDebitService {
         );
     }
 
-    public List<ItemAutomaticDebit> getItemAutomaticDebitsByOrderId(Integer id) {
-        return itemAutomaticDebitRepository.findByOrderId(id);
+    public List<ItemAutomaticDebitDTO> getItemAutomaticDebitsByOrderId(Integer id) {
+        List<ItemAutomaticDebit> itemAutomaticDebits = this.itemAutomaticDebitRepository.findByOrderId(id);
+        return itemAutomaticDebits.stream().map(s -> this.mapper.toDTO(s)).collect(Collectors.toList());
     }
     
     

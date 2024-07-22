@@ -17,7 +17,7 @@ import com.banquito.corecobros.order.model.ItemCollection;
 import com.banquito.corecobros.order.service.ItemCollectionService;
 
 @RestController
-@RequestMapping("/api/v1/item-collection")
+@RequestMapping("/api/v1/collections")
 public class ItemCollectionController {
     private final ItemCollectionService itemCollectionService;
 
@@ -71,8 +71,9 @@ public class ItemCollectionController {
     }
 
     @GetMapping("/by-order/{orderId}")
-    public ResponseEntity<List<ItemCollection>> getItemCollectionsByOrderId(@PathVariable Integer orderId) {
-        List<ItemCollection> items = itemCollectionService.getItemCollectionsByOrderId(orderId);
+    public ResponseEntity<List<ItemCollectionDTO>> getItemCollectionsByOrderId(@PathVariable Integer orderId) {
+        List<ItemCollectionDTO> items = itemCollectionService.getItemCollectionsByOrderId(orderId);
         return ResponseEntity.ok(items);
+
     }
 }

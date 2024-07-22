@@ -1,15 +1,11 @@
 package com.banquito.corecobros.order.controller;
 
-import java.util.List;
-
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import com.banquito.corecobros.order.dto.CollectionPaymentRecordDTO;
-import com.banquito.corecobros.order.model.CollectionPaymentRecord;
 import com.banquito.corecobros.order.service.ItemCollectionService;
 import com.banquito.corecobros.order.service.PaymentRecordService;
 

@@ -91,13 +91,10 @@ public class ItemCollectionService {
         return itemCollections.stream().map(this.itemCollectionMapper::toDTO).collect(Collectors.toList());
     }
 
-    public List<ItemCollection> getItemCollectionsByOrderId(Integer id) {
-        return itemCollectionRepository.findByOrderId(id);
+    public List<ItemCollectionDTO> getItemCollectionsByOrderId(Integer id) {
+        List<ItemCollection> itemCollections = this.itemCollectionRepository.findByOrderId(id);
+        return itemCollections.stream().map(this.itemCollectionMapper::toDTO).collect(Collectors.toList());
     }
-
-    // public List<CollectionPaymentRecord> getPaymentRecordsByAccountId(Integer accountId) {
-    //     return itemCollectionRepository.findByAccountId(accountId);
-    // }
 
     public ItemCollectionDTO findByCounterpart(String counterpart) {
         Optional<ItemCollection> itemCollection = this.itemCollectionRepository.findByCounterpart(counterpart);
