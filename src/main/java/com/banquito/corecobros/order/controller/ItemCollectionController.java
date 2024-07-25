@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.banquito.corecobros.order.dto.ItemCollectionDTO;
-import com.banquito.corecobros.order.model.ItemCollection;
 import com.banquito.corecobros.order.service.ItemCollectionService;
 
 @RestController
@@ -54,15 +53,15 @@ public class ItemCollectionController {
         return ResponseEntity.ok(this.itemCollectionService.obtainItemCollectionsByStatus(status));
     }
 
-    @PostMapping("/upload")
-    public ResponseEntity<Void> uploadCsvFile(@RequestParam("file") MultipartFile file) {
-        try {
-            itemCollectionService.processCsvFile(file);
-            return ResponseEntity.ok().build();
-        } catch (IOException e) {
-            return ResponseEntity.status(500).build();
-        }
-    }
+    // @PostMapping("/upload")
+    // public ResponseEntity<Void> uploadCsvFile(@RequestParam("file") MultipartFile file) {
+    //     try {
+    //         itemCollectionService.processCsvFile(file);
+    //         return ResponseEntity.ok().build();
+    //     } catch (IOException e) {
+    //         return ResponseEntity.status(500).build();
+    //     }
+    // }
 
     @GetMapping("/active")
     public ResponseEntity<List<ItemCollectionDTO>> getActiveItemCollections() {

@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.banquito.corecobros.order.dto.OrderDTO;
 import com.banquito.corecobros.order.model.Order;
@@ -18,20 +19,30 @@ import lombok.extern.slf4j.Slf4j;
 public class OrderService {
     private final OrderRepository orderRepository;
     private final OrderMapper orderMapper;
+    private final ItemCollectionService itemCollectionService;
 
-    public OrderService(OrderRepository orderRepository, OrderMapper orderMapper) {
+
+    public OrderService(OrderRepository orderRepository, OrderMapper orderMapper, ItemCollectionService itemCollectionService) {
         this.orderRepository = orderRepository;
         this.orderMapper = orderMapper;
+        this.itemCollectionService = itemCollectionService;
     }
 
-    public void createOrder(OrderDTO dto){
+    public void createOrder(MultipartFile file, OrderDTO dto){
         if(dto.getOrderId()!=null && orderRepository.existsById(dto.getOrderId())){
             throw new RuntimeException("El ID " + dto.getOrderId() + " ya existe.");
         }
         Order order = this.orderMapper.toPersistence(dto);
-        order.setStatus("PEN");
+        //order.setStatus("PEN");
         Order savedOrder = this.orderRepository.save(order);
         log.info("Se creo la orden: {}", savedOrder);
+
+        try {
+            itemCollectionService.processCsvFile(file, savedOrder.getOrderId());
+        } catch (Exception e) {
+            log.info("Error al procesar el archivo CSV", e);
+            throw new RuntimeException("Error al procesar el archivo CSV");
+        }
     }
 
     public List<OrderDTO> obtainAllOrders(){

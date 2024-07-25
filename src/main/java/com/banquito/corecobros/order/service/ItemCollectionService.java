@@ -48,9 +48,6 @@ public class ItemCollectionService {
     }
 
     public void createItemCollection(ItemCollectionDTO dto) {
-        if (dto.getId() != null && itemCollectionRepository.existsById(dto.getId())) {
-            throw new RuntimeException("El ID " + dto.getId() + " ya existe.");
-        }
         ItemCollection itemCollection = this.itemCollectionMapper.toPersistence(dto);
         ItemCollection savedItemCollection = this.itemCollectionRepository.save(itemCollection);
         log.info("Se creo la orden: {}", savedItemCollection);
@@ -104,12 +101,10 @@ public class ItemCollectionService {
         return this.itemCollectionMapper.toDTO(itemCollection.get());
     }
 
-    public void processCsvFile(MultipartFile file) throws IOException {
+    public void processCsvFile(MultipartFile file, Integer orderId) throws IOException {
         try (InputStreamReader reader = new InputStreamReader(file.getInputStream());
                 CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT.builder().setHeader().build())) {
             for (CSVRecord csvRecord : csvParser) {
-                String code = csvRecord.get("code");
-                String orderCode = csvRecord.get("orderCode");
                 String uniqueId = csvRecord.get("uniqueId");
                 String debtorName = csvRecord.get("debtorName");
                 String counterpart = csvRecord.get("counterpart");
@@ -117,8 +112,7 @@ public class ItemCollectionService {
                 String status = csvRecord.get("status");
 
                 ItemCollectionDTO dto = new ItemCollectionDTO();
-                dto.setId(Integer.valueOf(code));
-                dto.setOrderId(Integer.valueOf(orderCode));
+                dto.setOrderId(orderId);
                 dto.setUniqueId(uniqueId);
                 dto.setDebtorName(debtorName);
                 dto.setCounterpart(counterpart);
@@ -157,7 +151,7 @@ public class ItemCollectionService {
             );
 
             CollectionPaymentRecordDTO record = new CollectionPaymentRecordDTO();
-            record.setItemCollectionId(collection.getId());
+            //record.setItemCollectionId(collection.getId());
             record.setCollectionAmount(collection.getCollectionAmount());
             record.setPaymentType("TOT");
             record.setPaymentDate(LocalDateTime.now());

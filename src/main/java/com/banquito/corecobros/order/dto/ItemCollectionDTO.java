@@ -4,19 +4,13 @@ import java.math.BigDecimal;
 
 
 public class ItemCollectionDTO {
-    private Integer id;
     private Integer orderId;
     private String uniqueId;
     private String debtorName;
     private String counterpart;
     private BigDecimal collectionAmount;
     private String status;
-    public Integer getId() {
-        return id;
-    }
-    public void setId(Integer id) {
-        this.id = id;
-    }
+    
     public Integer getOrderId() {
         return orderId;
     }
@@ -53,6 +47,8 @@ public class ItemCollectionDTO {
     public void setStatus(String status) {
         this.status = status;
     }
+
+    
 
     
 }
