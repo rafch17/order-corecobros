@@ -19,4 +19,9 @@ public interface ItemCollectionRepository extends JpaRepository<ItemCollection, 
 
     Optional<ItemCollection> findByCounterpart(String counterpart);
 
+    List<ItemCollection> findByOrderIdIn(List<Integer> orderIds);
+
+    
+
+
 }

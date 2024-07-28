@@ -16,7 +16,7 @@ import com.banquito.corecobros.order.dto.ItemAutomaticDebitDTO;
 import com.banquito.corecobros.order.service.ItemAutomaticDebitService;
 
 @RestController
-@RequestMapping("/api/v1/debitAuto")
+@RequestMapping("/api/v1/automaticDebits")
 public class ItemAutomaticDebitController {
     private final ItemAutomaticDebitService itemAutomaticDebitService;
 

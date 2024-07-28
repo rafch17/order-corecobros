@@ -85,5 +85,8 @@ public class OrderController {
         return new ResponseEntity<>(orders, HttpStatus.OK);
     }
 
-    
+    @GetMapping("/service/{serviceId}")
+    public List<OrderDTO> getOrdersByServiceId(@PathVariable Integer serviceId) {
+        return orderService.getActiveOrdersByServiceId(serviceId);
+    }
 }

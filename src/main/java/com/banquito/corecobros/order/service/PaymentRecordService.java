@@ -1,5 +1,6 @@
 package com.banquito.corecobros.order.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -11,6 +12,8 @@ import com.banquito.corecobros.order.model.AutomaticDebitPaymentRecord;
 import com.banquito.corecobros.order.model.CollectionPaymentRecord;
 import com.banquito.corecobros.order.repository.AutomaticDebitPaymentRecordRepository;
 import com.banquito.corecobros.order.repository.CollectionPaymentRecordRepository;
+import com.banquito.corecobros.order.model.Order;
+import com.banquito.corecobros.order.repository.OrderRepository;
 import com.banquito.corecobros.order.util.mapper.AutomaticDebitPaymentRecordMapper;
 import com.banquito.corecobros.order.util.mapper.CollectionPaymentRecordMapper;
 
@@ -23,15 +26,18 @@ public class PaymentRecordService {
     private final AutomaticDebitPaymentRecordRepository automaticDebitPaymentRecordRepository;
     private final AutomaticDebitPaymentRecordMapper automaticDebitPaymentRecordMapper;
     private final CollectionPaymentRecordMapper collectionPaymentRecordMapper;
+    private final OrderRepository orderRepository;
 
     public PaymentRecordService(CollectionPaymentRecordRepository collectionPaymentRecordRepository,
             AutomaticDebitPaymentRecordRepository automaticDebitPaymentRecordRepository,
             AutomaticDebitPaymentRecordMapper automaticDebitPaymentRecordMapper,
-            CollectionPaymentRecordMapper collectionPaymentRecordMapper) {
+            CollectionPaymentRecordMapper collectionPaymentRecordMapper,
+            OrderRepository orderRepository) {
         this.collectionPaymentRecordRepository = collectionPaymentRecordRepository;
         this.automaticDebitPaymentRecordRepository = automaticDebitPaymentRecordRepository;
         this.automaticDebitPaymentRecordMapper = automaticDebitPaymentRecordMapper;
         this.collectionPaymentRecordMapper = collectionPaymentRecordMapper;
+        this.orderRepository = orderRepository;
     }
 
     public CollectionPaymentRecord createCollectionPaymentRecord(CollectionPaymentRecordDTO dto) {
@@ -76,6 +82,23 @@ public class PaymentRecordService {
         collectionPaymentRecord.setChannel(dto.getChannel());
         CollectionPaymentRecord updatedRecord = this.collectionPaymentRecordRepository.save(collectionPaymentRecord);
         return this.collectionPaymentRecordMapper.toDTO(updatedRecord);
+    }
+
+    public List<CollectionPaymentRecordDTO> findCollectionPaymentRecordsByAccountId(Integer accountId) {
+        List<Order> orders = orderRepository.findByAccountId(accountId);
+
+        List<Integer> itemCollectionIds = orders.stream()
+            .flatMap(order -> order.getItemCollections().stream())
+            .map(itemCollection -> itemCollection.getId())
+            .collect(Collectors.toList());
+
+        if (itemCollectionIds.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        return collectionPaymentRecordRepository.findByItemCollectionIdIn(itemCollectionIds).stream()
+            .map(collectionPaymentRecordMapper::toDTO)
+            .collect(Collectors.toList());
     }
 
 

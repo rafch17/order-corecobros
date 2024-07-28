@@ -3,7 +3,6 @@ package com.banquito.corecobros.order.service;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -11,22 +10,14 @@ import java.util.stream.Collectors;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.banquito.corecobros.order.dto.CollectionPaymentRecordDTO;
 import com.banquito.corecobros.order.dto.ItemCollectionDTO;
 import com.banquito.corecobros.order.model.ItemCollection;
 import com.banquito.corecobros.order.repository.ItemCollectionRepository;
 import com.banquito.corecobros.order.util.mapper.ItemCollectionMapper;
 
-import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -34,17 +25,13 @@ import lombok.extern.slf4j.Slf4j;
 public class ItemCollectionService {
     private final ItemCollectionRepository itemCollectionRepository;
     private final ItemCollectionMapper itemCollectionMapper;
-    private final PaymentRecordService collectionPaymentRecordService;
-    private final RestTemplate restTemplate;
-    private final String accountServiceUrl = "http://your-account-service-url";
+
+    
 
     public ItemCollectionService(ItemCollectionRepository itemCollectionRepository,
-            ItemCollectionMapper itemCollectionMapper, PaymentRecordService collectionPaymentRecordService,
-            RestTemplate restTemplate) {
+            ItemCollectionMapper itemCollectionMapper) {
         this.itemCollectionRepository = itemCollectionRepository;
         this.itemCollectionMapper = itemCollectionMapper;
-        this.collectionPaymentRecordService = collectionPaymentRecordService;
-        this.restTemplate = restTemplate;
     }
 
     public void createItemCollection(ItemCollectionDTO dto) {
@@ -121,46 +108,12 @@ public class ItemCollectionService {
 
                 this.createItemCollection(dto);
             }
-
             log.info("Archivo CSV procesado con éxito.");
         } catch (IOException e) {
             log.error("Error procesando el archivo CSV", e);
             throw e;
         }
     }
-    @Transactional
-    public void processItemCollection(String counterpart) {
-        ItemCollectionDTO collection = this.findByCounterpart(counterpart);
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Content-Type", "application/json");
-        HttpEntity<String> request = new HttpEntity<>(headers);
-        ResponseEntity<Boolean> response = restTemplate.exchange(
-            accountServiceUrl + "/verifyCounterpart?counterpart=" + counterpart + "&debtorName=" + collection.getDebtorName(),
-            HttpMethod.GET,
-            request,
-            Boolean.class
-        );
-
-        if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null && response.getBody()) {
-            restTemplate.exchange(
-                accountServiceUrl + "/debitAccount?counterpart=" + collection.getCounterpart() + "&amount=" + collection.getCollectionAmount(),
-                HttpMethod.POST,
-                request,
-                Void.class
-            );
-
-            CollectionPaymentRecordDTO record = new CollectionPaymentRecordDTO();
-            //record.setItemCollectionId(collection.getId());
-            record.setCollectionAmount(collection.getCollectionAmount());
-            record.setPaymentType("TOT");
-            record.setPaymentDate(LocalDateTime.now());
-            record.setOutstandingBalance(BigDecimal.ZERO);
-            record.setChannel("WEB");
-            this.collectionPaymentRecordService.createCollectionPaymentRecord(record);
-        } else {
-            log.warn("No se pudo verificar la contrapartida {} para el deudor {}", collection.getCounterpart(), collection.getDebtorName());
-        }
-    }
-
+    
 }

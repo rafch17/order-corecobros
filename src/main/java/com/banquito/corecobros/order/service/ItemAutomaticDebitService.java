@@ -31,17 +31,11 @@ import lombok.extern.slf4j.Slf4j;
 public class ItemAutomaticDebitService {
     private final ItemAutomaticDebitRepository itemAutomaticDebitRepository;
     private final ItemAutomaticDebitMapper mapper;
-    private final PaymentRecordService paymentRecordService;
-    private final RestTemplate restTemplate;
-    private final String accountServiceUrl = "http://your-account-service-url";
 
-
-    public ItemAutomaticDebitService(ItemAutomaticDebitRepository itemAutomaticDebitRepository, ItemAutomaticDebitMapper mapper,
-            PaymentRecordService paymentRecordService, RestTemplate restTemplate) {
+    public ItemAutomaticDebitService(ItemAutomaticDebitRepository itemAutomaticDebitRepository,
+            ItemAutomaticDebitMapper mapper) {
         this.itemAutomaticDebitRepository = itemAutomaticDebitRepository;
         this.mapper = mapper;
-        this.paymentRecordService = paymentRecordService;
-        this.restTemplate = restTemplate;
     }
 
     public void createItemAutomaticDebit(ItemAutomaticDebitDTO dto) {
@@ -109,61 +103,6 @@ public class ItemAutomaticDebitService {
             throw e;
         }
 
-    }
-    @Transactional
-    public void processAutomaticDebit() {
-        List<ItemAutomaticDebitDTO> activeItemAutomaticDebit = this.obtainItemAutomaticDebitsByStatus("ACT");
-        for (ItemAutomaticDebitDTO item : activeItemAutomaticDebit) {
-            BigDecimal accountBalance = getAccountBalance(item.getDebitAccount());
-
-            AutomaticDebitPaymentRecordDTO record = new AutomaticDebitPaymentRecordDTO();
-            record.setItemAutomaticDebitId(item.getId());
-            record.setDebitAmount(item.getDebitAmount());
-            record.setPaymentDate(LocalDateTime.now());
-
-            if (accountBalance.compareTo(item.getDebitAmount()) >= 0) {
-                debitAccount(item.getDebitAccount(), item.getDebitAmount());
-                record.setOutstandingBalance(BigDecimal.ZERO);
-                record.setPaymentType("TOT");
-                record.setStatus("PAG");
-            } else {
-                debitAccount(item.getDebitAccount(), accountBalance);
-                record.setOutstandingBalance(item.getDebitAmount().subtract(accountBalance));
-                record.setPaymentType("PAR");
-            }
-
-            this.paymentRecordService.createAutomaticDebitPaymentRecord(record);
-        }
-    }
-
-    private BigDecimal getAccountBalance(String debitAccount) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Content-Type", "application/json");
-        HttpEntity<String> request = new HttpEntity<>(headers);
-        ResponseEntity<BigDecimal> response = restTemplate.exchange(
-            accountServiceUrl + "/accountBalance?debitAccount=" + debitAccount,
-            HttpMethod.GET,
-            request,
-            BigDecimal.class
-        );
-
-        if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
-            return response.getBody();
-        } else {
-            throw new RuntimeException("No se pudo obtener el saldo de la cuenta " + debitAccount);
-        }
-    }
-
-    private void debitAccount(String debitAccount, BigDecimal amount) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Content-Type", "application/json");
-        HttpEntity<String> request = new HttpEntity<>(headers);
-        restTemplate.exchange(
-            accountServiceUrl + "/debitAccount?debitAccount=" + debitAccount + "&amount=" + amount,
-            HttpMethod.POST,
-            request,
-            Void.class
-        );
     }
 
     public List<ItemAutomaticDebitDTO> getItemAutomaticDebitsByOrderId(Integer id) {

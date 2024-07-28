@@ -2,12 +2,14 @@ package com.banquito.corecobros.order.model;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
@@ -45,6 +47,9 @@ public class Order {
     private String description;
     @Column(name = "STATUS", length = 3, nullable = false)
     private String status;
+
+    @OneToMany(mappedBy = "order")
+    private List<ItemCollection> itemCollections;
     
     public Order(Integer orderId) {
         this.orderId = orderId;

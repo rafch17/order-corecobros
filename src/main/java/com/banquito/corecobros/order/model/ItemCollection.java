@@ -1,6 +1,7 @@
 package com.banquito.corecobros.order.model;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -9,6 +10,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -38,7 +40,9 @@ public class ItemCollection {
     private BigDecimal collectionAmount;
     @Column(name = "STATUS", length = 3, nullable = false)
     private String status;
-
+    
+    @OneToMany(mappedBy = "itemCollection")
+    private List<CollectionPaymentRecord> collectionPaymentRecords;
     @ManyToOne
     @JoinColumn(name = "ORDER_ID", referencedColumnName = "ORDER_ID",insertable = false, updatable = false)
     private Order order;

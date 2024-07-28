@@ -13,10 +13,18 @@ import com.banquito.corecobros.order.model.Order;
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Integer> {
     Order findByUniqueId(String uniqueId);
+    @Query("SELECT o FROM Order o WHERE CURRENT_DATE BETWEEN o.startDate AND o.endDate AND o.serviceId = :serviceId AND o.status = 'ACT'")
+            List<Order> findActiveOrdersByServiceId(@Param("serviceId") Integer serviceId);
+    List<Order> findByAccountId(Integer accountId);
+    List<Order> findByEndDateBeforeAndStatus(LocalDate endDate, String status);
+
     @Query("SELECT o FROM Order o WHERE o.serviceId = :serviceId AND o.accountId = :accountId AND o.startDate >= :startDate AND o.endDate <= :endDate")
     List<Order> findByServiceIdAndAccountIdAndDateRange(
             @Param("serviceId") Integer serviceId,
             @Param("accountId") Integer accountId,
             @Param("startDate") LocalDate startDate,
-            @Param("endDate") LocalDate endDate);;
+            @Param("endDate") LocalDate endDate);
+
+    
 }
+
