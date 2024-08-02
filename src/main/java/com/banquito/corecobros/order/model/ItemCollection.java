@@ -43,6 +43,7 @@ public class ItemCollection {
     
     @OneToMany(mappedBy = "itemCollection")
     private List<CollectionPaymentRecord> collectionPaymentRecords;
+
     @ManyToOne
     @JoinColumn(name = "ORDER_ID", referencedColumnName = "ORDER_ID",insertable = false, updatable = false)
     private Order order;

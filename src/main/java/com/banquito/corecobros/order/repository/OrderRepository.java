@@ -4,27 +4,22 @@ import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import com.banquito.corecobros.order.model.CollectionPaymentRecord;
 import com.banquito.corecobros.order.model.Order;
 
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Integer> {
-    Order findByUniqueId(String uniqueId);
-    @Query("SELECT o FROM Order o WHERE CURRENT_DATE BETWEEN o.startDate AND o.endDate AND o.serviceId = :serviceId AND o.status = 'ACT'")
-            List<Order> findActiveOrdersByServiceId(@Param("serviceId") Integer serviceId);
-    List<Order> findByAccountId(Integer accountId);
-    List<Order> findByEndDateBeforeAndStatus(LocalDate endDate, String status);
+        Order findByUniqueId(String uniqueId);
 
-    @Query("SELECT o FROM Order o WHERE o.serviceId = :serviceId AND o.accountId = :accountId AND o.startDate >= :startDate AND o.endDate <= :endDate")
-    List<Order> findByServiceIdAndAccountIdAndDateRange(
-            @Param("serviceId") Integer serviceId,
-            @Param("accountId") Integer accountId,
-            @Param("startDate") LocalDate startDate,
-            @Param("endDate") LocalDate endDate);
+        List<Order> findByServiceIdAndStatusAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
+                        Integer serviceId, String status, LocalDate currentDate1, LocalDate currentDate2);
 
-    
+        List<Order> findByAccountId(Integer accountId);
+
+        List<Order> findByEndDateBeforeAndStatus(LocalDate endDate, String status);
+
+        List<Order> findByServiceIdAndAccountIdAndStartDateGreaterThanEqualAndEndDateLessThanEqual(
+                        Integer serviceId, Integer accountId, LocalDate startDate, LocalDate endDate);
 }
-

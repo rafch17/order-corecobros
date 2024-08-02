@@ -7,18 +7,25 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.banquito.corecobros.order.dto.ItemCollectionDTO;
+import com.banquito.corecobros.order.model.ItemCollection;
+import com.banquito.corecobros.order.repository.OrderRepository;
 import com.banquito.corecobros.order.service.ItemCollectionService;
 
 @RestController
 @RequestMapping("/api/v1/collections")
 public class ItemCollectionController {
     private final ItemCollectionService itemCollectionService;
+    private OrderRepository orderRepository;
 
-    public ItemCollectionController(ItemCollectionService itemCollectionService) {
+    
+
+    public ItemCollectionController(ItemCollectionService itemCollectionService, OrderRepository orderRepository) {
         this.itemCollectionService = itemCollectionService;
+        this.orderRepository = orderRepository;
     }
 
     @GetMapping

@@ -33,4 +33,12 @@ public class PaymentRecordController {
     public List<CollectionPaymentRecordDTO> getPaymentRecordsByAccountId(@PathVariable Integer accountId) {
         return paymentRecordService.findCollectionPaymentRecordsByAccountId(accountId);
     }
+
+    @GetMapping("/by-item-collection/{itemCollectionId}")
+    public ResponseEntity<List<CollectionPaymentRecordDTO>> getCollectionPaymentRecordsByItemCollectionId(
+            @PathVariable Integer itemCollectionId) {
+        List<CollectionPaymentRecordDTO> records = paymentRecordService
+                .getCollectionPaymentRecordsByItemCollectionId(itemCollectionId);
+        return ResponseEntity.ok(records);
+    }
 }

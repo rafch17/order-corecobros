@@ -101,5 +101,10 @@ public class PaymentRecordService {
             .collect(Collectors.toList());
     }
 
+    public List<CollectionPaymentRecordDTO> getCollectionPaymentRecordsByItemCollectionId(Integer itemCollectionId) {
+        List<CollectionPaymentRecord> records = this.collectionPaymentRecordRepository
+                .findByItemCollectionId(itemCollectionId);
+        return records.stream().map(this.collectionPaymentRecordMapper::toDTO).collect(Collectors.toList());
+    }
 
 }
