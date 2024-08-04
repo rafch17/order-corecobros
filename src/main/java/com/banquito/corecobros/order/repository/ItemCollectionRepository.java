@@ -1,7 +1,6 @@
 package com.banquito.corecobros.order.repository;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -17,11 +16,9 @@ public interface ItemCollectionRepository extends JpaRepository<ItemCollection, 
 
     List<ItemCollection> findByOrderId(Integer id);
 
-    Optional<ItemCollection> findByCounterpart(String counterpart);
+    List<ItemCollection> findByCounterpart(String counterpart);
 
     List<ItemCollection> findByOrderIdIn(List<Integer> orderIds);
 
-    
-
-
+    List<ItemCollection> findByCounterpartAndUniqueId(String counterpart, String uniqueId);
 }

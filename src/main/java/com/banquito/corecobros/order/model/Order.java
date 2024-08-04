@@ -48,6 +48,7 @@ public class Order {
     @Column(name = "STATUS", length = 3, nullable = false)
     private String status;
 
+
     @OneToMany(mappedBy = "order")
     private List<ItemCollection> itemCollections;
     

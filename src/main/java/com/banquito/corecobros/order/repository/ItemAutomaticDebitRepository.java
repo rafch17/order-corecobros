@@ -11,4 +11,5 @@ public interface ItemAutomaticDebitRepository extends JpaRepository<ItemAutomati
     List<ItemAutomaticDebit> findByOrderId(Integer id);
     List<ItemAutomaticDebit> findByStatus(String status);
     List<ItemAutomaticDebit> findByOrderIdIn(List<Integer> orderIds);
+    List<ItemAutomaticDebit> findByOrderIdAndStatus(Integer orderId, String status);
 }

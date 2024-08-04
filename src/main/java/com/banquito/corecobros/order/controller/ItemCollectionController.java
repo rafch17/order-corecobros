@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.banquito.corecobros.order.dto.ItemCollectionDTO;
@@ -23,11 +24,16 @@ public class ItemCollectionController {
     private final ItemCollectionService itemCollectionService;
     private OrderRepository orderRepository;
 
-    
-
     public ItemCollectionController(ItemCollectionService itemCollectionService, OrderRepository orderRepository) {
         this.itemCollectionService = itemCollectionService;
         this.orderRepository = orderRepository;
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<ItemCollectionDTO>> getItemCollectionsByCounterpartAndCompany(
+            @RequestParam String counterpart, @RequestParam String companyId) {
+        List<ItemCollectionDTO> items = itemCollectionService.findByCounterpartAndCompany(counterpart, companyId);
+        return ResponseEntity.ok(items);
     }
 
     @GetMapping

@@ -52,15 +52,15 @@ public class ItemAutomaticDebitController {
         }
     }
 
-    @PostMapping("/upload")
-    public ResponseEntity<Void> uploadCsvFile(@RequestParam("file") MultipartFile file) {
-        try {
-            itemAutomaticDebitService.processCsvFile(file);
-            return ResponseEntity.ok().build();
-        } catch (IOException e) {
-            return ResponseEntity.status(500).build();
-        }
-    }
+    // @PostMapping("/upload")
+    // public ResponseEntity<Void> uploadCsvFile(@RequestParam("file") MultipartFile file) {
+    //     try {
+    //         itemAutomaticDebitService.processCsvFile(file);
+    //         return ResponseEntity.ok().build();
+    //     } catch (IOException e) {
+    //         return ResponseEntity.status(500).build();
+    //     }
+    // }
 
     @GetMapping("/by-order/{orderId}")
     public ResponseEntity<List<ItemAutomaticDebitDTO>> getItemAutomaticDebitsByOrderId(@PathVariable Integer orderId) {

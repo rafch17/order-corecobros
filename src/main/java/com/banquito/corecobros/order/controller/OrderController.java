@@ -41,12 +41,24 @@ public class OrderController {
     }
 
 
-    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<Void> createOrder(
+    @PostMapping(value = "/automatic-debit", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Void> createOrderAD(
             @RequestPart("file") MultipartFile file,
             @RequestPart("order") OrderDTO orderDTO) {
         try {
-            this.orderService.createOrder(file, orderDTO);
+            this.orderService.createOrderAutomaticDebit(file, orderDTO);
+            return ResponseEntity.ok().build();
+        } catch (RuntimeException rte) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @PostMapping(value = "/collection", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Void> createOrderCollection(
+            @RequestPart("file") MultipartFile file,
+            @RequestPart("order") OrderDTO orderDTO) {
+        try {
+            this.orderService.createOrderCollection(file, orderDTO);
             return ResponseEntity.ok().build();
         } catch (RuntimeException rte) {
             return ResponseEntity.badRequest().build();

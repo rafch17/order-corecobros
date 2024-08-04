@@ -3,28 +3,20 @@ package com.banquito.corecobros.order.service;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.banquito.corecobros.order.dto.AutomaticDebitPaymentRecordDTO;
 import com.banquito.corecobros.order.dto.ItemAutomaticDebitDTO;
 import com.banquito.corecobros.order.model.ItemAutomaticDebit;
 import com.banquito.corecobros.order.repository.ItemAutomaticDebitRepository;
 import com.banquito.corecobros.order.util.mapper.ItemAutomaticDebitMapper;
 
-import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Service
@@ -71,28 +63,22 @@ public class ItemAutomaticDebitService {
         return itemAutomaticDebits.stream().map(s -> this.mapper.toDTO(s)).collect(Collectors.toList());
     }
 
-    public void processCsvFile(MultipartFile file) throws IOException {
+    public void processCsvFile(MultipartFile file, Integer orderId) throws IOException {
         try (InputStreamReader reader = new InputStreamReader(file.getInputStream());
                 CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT.builder().setHeader().build())) {
             for (CSVRecord csvRecord : csvParser) {
-                String code = csvRecord.get("code");
-                String orderCode = csvRecord.get("orderCode");
-                String uniqueId = csvRecord.get("uniqueId");
                 String identification = csvRecord.get("identification");
                 String debtorName = csvRecord.get("debtorName");
                 String debitAccount = csvRecord.get("debitAccount");
                 String debitAmount = csvRecord.get("debitAmount");
-                String status = csvRecord.get("status");
 
                 ItemAutomaticDebitDTO dto = new ItemAutomaticDebitDTO();
-                dto.setId(Integer.valueOf(code));
-                dto.setOrderId(Integer.valueOf(orderCode));
-                dto.setUniqueId(uniqueId);
+                dto.setOrderId(orderId);
                 dto.setIdentification(identification);
                 dto.setDebtorName(debtorName);
                 dto.setDebitAccount(debitAccount);
                 dto.setDebitAmount(new BigDecimal(debitAmount));
-                dto.setStatus(status);
+                dto.setStatus("PEN");
 
                 this.createItemAutomaticDebit(dto);
             }
@@ -108,6 +94,19 @@ public class ItemAutomaticDebitService {
     public List<ItemAutomaticDebitDTO> getItemAutomaticDebitsByOrderId(Integer id) {
         List<ItemAutomaticDebit> itemAutomaticDebits = this.itemAutomaticDebitRepository.findByOrderId(id);
         return itemAutomaticDebits.stream().map(s -> this.mapper.toDTO(s)).collect(Collectors.toList());
+    }
+
+
+    public List<ItemAutomaticDebitDTO> getItemsByOrderIdAndStatus(Integer orderId, String status) {
+        List<ItemAutomaticDebit> items = itemAutomaticDebitRepository.findByOrderIdAndStatus(orderId, status);
+        return items.stream()
+                    .map(item -> mapper.toDTO(item))
+                    .collect(Collectors.toList());
+    }
+
+    public void updateItem(ItemAutomaticDebitDTO itemDTO) {
+        ItemAutomaticDebit item = mapper.toPersistence(itemDTO);
+        itemAutomaticDebitRepository.save(item);
     }
     
     

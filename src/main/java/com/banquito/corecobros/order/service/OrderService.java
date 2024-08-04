@@ -1,5 +1,6 @@
 package com.banquito.corecobros.order.service;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -8,17 +9,28 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.http.MediaType;
+
+import com.banquito.corecobros.order.dto.AccountTransactionDTO;
+import com.banquito.corecobros.order.dto.AutomaticDebitPaymentRecordDTO;
+import com.banquito.corecobros.order.dto.ItemAutomaticDebitDTO;
 import com.banquito.corecobros.order.dto.OrderDTO;
+import com.banquito.corecobros.order.dto.ResponseTransactionDTO;
+import com.banquito.corecobros.order.model.AutomaticDebitPaymentRecord;
 import com.banquito.corecobros.order.model.ItemAutomaticDebit;
 import com.banquito.corecobros.order.model.ItemCollection;
 import com.banquito.corecobros.order.model.Order;
+import com.banquito.corecobros.order.repository.AutomaticDebitPaymentRecordRepository;
 import com.banquito.corecobros.order.repository.ItemAutomaticDebitRepository;
 import com.banquito.corecobros.order.repository.ItemCollectionRepository;
 import com.banquito.corecobros.order.repository.OrderRepository;
 import com.banquito.corecobros.order.util.mapper.OrderMapper;
+import com.banquito.corecobros.order.util.uniqueId.UniqueIdGeneration;
 
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
+import reactor.core.publisher.Mono;
 
 @Slf4j
 @Service
@@ -27,24 +39,34 @@ public class OrderService {
     private final OrderMapper orderMapper;
     private final ItemCollectionService itemCollectionService;
     private final ItemCollectionRepository itemCollectionRepository;
+    private final ItemAutomaticDebitService itemAutomaticDebitService;
     private final ItemAutomaticDebitRepository itemAutomaticDebitRepository;
+    private final AutomaticDebitPaymentRecordRepository automaticDebitPaymentRecordRepository;
 
     public OrderService(OrderRepository orderRepository, OrderMapper orderMapper,
             ItemCollectionService itemCollectionService, ItemCollectionRepository itemCollectionRepository,
-            ItemAutomaticDebitRepository itemAutomaticDebitRepository) {
+            ItemAutomaticDebitService itemAutomaticDebitService, ItemAutomaticDebitRepository itemAutomaticDebitRepository,
+            AutomaticDebitPaymentRecordRepository automaticDebitPaymentRecordRepository) {
         this.orderRepository = orderRepository;
         this.orderMapper = orderMapper;
         this.itemCollectionService = itemCollectionService;
         this.itemCollectionRepository = itemCollectionRepository;
+        this.itemAutomaticDebitService = itemAutomaticDebitService;
         this.itemAutomaticDebitRepository = itemAutomaticDebitRepository;
+        this.automaticDebitPaymentRecordRepository = automaticDebitPaymentRecordRepository;
     }
 
-    public void createOrder(MultipartFile file, OrderDTO dto) {
-        if (dto.getOrderId() != null && orderRepository.existsById(dto.getOrderId())) {
-            throw new RuntimeException("El ID " + dto.getOrderId() + " ya existe.");
-        }
+    public void createOrderCollection(MultipartFile file, OrderDTO dto) {
         Order order = this.orderMapper.toPersistence(dto);
         order.setStatus("PEN");
+        // order.setServiceId("LEY0053994");
+        order.setServiceId(1);
+        String uniqueId = generateUniqueId();
+
+        while (orderRepository.existsByUniqueId(uniqueId)){
+            uniqueId = generateUniqueId();
+        }
+        order.setUniqueId(uniqueId);
         Order savedOrder = this.orderRepository.save(order);
         log.info("Se creo la orden: {}", savedOrder);
 
@@ -54,6 +76,35 @@ public class OrderService {
             log.info("Error al procesar el archivo CSV", e);
             throw new RuntimeException("Error al procesar el archivo CSV");
         }
+    }
+
+
+    public void createOrderAutomaticDebit(MultipartFile file, OrderDTO dto) {
+        Order order = this.orderMapper.toPersistence(dto);
+        order.setStatus("PEN");
+        // order.setServiceId("JXM0025321");
+        order.setServiceId(2);
+        order.setAccountId(2);
+        String uniqueId = generateUniqueId();
+
+        while (orderRepository.existsByUniqueId(uniqueId)){
+            uniqueId = generateUniqueId();
+        }
+        order.setUniqueId(uniqueId);
+        Order savedOrder = this.orderRepository.save(order);
+        log.info("Se creo la orden: {}", savedOrder);
+
+        try {
+            itemAutomaticDebitService.processCsvFile(file, savedOrder.getOrderId());
+        } catch (Exception e) {
+            log.info("Error al procesar el archivo CSV", e);
+            throw new RuntimeException("Error al procesar el archivo CSV");
+        }
+    }
+
+    private String generateUniqueId() {
+        UniqueIdGeneration uniqueIdGenerator = new UniqueIdGeneration();
+        return uniqueIdGenerator.getUniqueId();
     }
 
     public List<OrderDTO> obtainAllOrders() {
@@ -116,9 +167,8 @@ public class OrderService {
     public void expireItemsAfterOrderEndDate() {
         LocalDate today = LocalDate.now();
         List<Order> orders = orderRepository.findByEndDateBeforeAndStatus(today, "ACT");
-        log.info("order {}", orders);
         if (orders.isEmpty()) {
-            log.info("vacio");
+            log.info("No existe ninguna orden Activa el dia de hoy");
             return;
         }
 
@@ -130,64 +180,101 @@ public class OrderService {
         List<ItemAutomaticDebit> itemsAD = itemAutomaticDebitRepository.findByOrderIdIn(orderIds);
 
         for (ItemCollection item : items) {
-            log.info("cambio de estado en item");
+            log.info("Cambio de estado en itemCollection");
             item.setStatus("EXP");
             itemCollectionRepository.save(item);
         }
 
         for (ItemAutomaticDebit itemAD : itemsAD) {
-            log.info("cambio de estado en itemAD {}", itemAD.getId());
+            log.info("Cambio de estado en itemAutomaticD {}", itemAD.getId());
             itemAD.setStatus("EXP");
             itemAutomaticDebitRepository.save(itemAD);
         }
 
         for (Order order : orders) {
-            log.info("cambio de estado en orden");
+            log.info("Cambio de estado en orden");
             order.setStatus("EXP");
             orderRepository.save(order);
         }
     }
 
-    @Scheduled(cron = "0 0 0 * * ?")
+    @Scheduled(cron = "0 0 13 * * ?")
     @Async
     public void updateExpiredItems() {
         this.expireItemsAfterOrderEndDate();
     }
+
+    @Scheduled(cron = "0 0 13 * * ?") // Ejecuta a la 1 p.m. todos los días
+    @Async
+    @Transactional
+    public void processAutomaticDebits() {
+        log.info("Starting automatic debit processing...");
+
+        List<OrderDTO> orders = this.getActiveOrdersByServiceId(2);
+        for (OrderDTO order : orders) {
+            List<ItemAutomaticDebitDTO> items = itemAutomaticDebitService.getItemsByOrderIdAndStatus(order.getOrderId(), "PEN");
+
+            WebClient webClient = WebClient.builder().baseUrl("http://localhost:8080/api/v1/account-transactions").build();
+            for (ItemAutomaticDebitDTO item : items) {
+                AccountTransactionDTO transactionDTO = AccountTransactionDTO.builder()
+                    .accountId(order.getAccountId())
+                    .uniqueId(order.getUniqueId())
+                    .codeChannel("1")
+                    .uniqueKey(order.getUniqueId())
+                    .transactionType("DEB")
+                    .transactionSubtype("TRANSFER")
+                    .reference(order.getDescription())
+                    .amount(item.getDebitAmount())
+                    .creditorAccount("2273445678")
+                    .debitorAccount(item.getDebitAccount())
+                    .createDate(LocalDateTime.now())
+                    .applyTax(false)
+                    .parentTransactionKey(null)
+                    .status("PEN")
+                    .build();
+
+                try {
+                    Mono<ResponseTransactionDTO> responseMono = webClient.post()
+                        .uri("")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .bodyValue(transactionDTO)
+                        .retrieve()
+                        .bodyToMono(ResponseTransactionDTO.class);
+
+                    ResponseTransactionDTO response = responseMono.block(); 
+
+                    AutomaticDebitPaymentRecordDTO record = new AutomaticDebitPaymentRecordDTO();
+                    record.setItemAutomaticDebitId(item.getId());
+                    record.setItemCommissionId(6);
+                    record.setOutstandingBalance(response.getPendiente());
+                    record.setDebitAmount(item.getDebitAmount());
+                    record.setPaymentDate(response.getCreateDate());
+                    
+                    if (response.getPendiente().compareTo(BigDecimal.ZERO) > 0) {
+                        record.setPaymentType("PAR");
+                        record.setStatus("PEN");
+                    } else {
+                        record.setPaymentType("TOT");
+                        record.setStatus("PAG");
+                    }
+
+                    AutomaticDebitPaymentRecord automaticDebitPaymentRecord = new AutomaticDebitPaymentRecord();
+                    automaticDebitPaymentRecord.setItemAutomaticDebitId(record.getItemAutomaticDebitId());
+                    automaticDebitPaymentRecord.setItemCommissionId(record.getItemCommissionId());
+                    automaticDebitPaymentRecord.setOutstandingBalance(record.getOutstandingBalance());
+                    automaticDebitPaymentRecord.setDebitAmount(record.getDebitAmount());
+                    automaticDebitPaymentRecord.setPaymentDate(record.getPaymentDate());
+                    automaticDebitPaymentRecord.setPaymentType(record.getPaymentType());
+                    automaticDebitPaymentRecord.setStatus(record.getStatus());
+
+                    automaticDebitPaymentRecordRepository.save(automaticDebitPaymentRecord);
+                } catch (Exception e) {
+                    log.error("Error processing debit for item {}: {}", item.getId(), e.getMessage());
+                }
+            }
+        }
+
+        log.info("Automatic debit processing completed.");
+    }
+
 }
-    //@Scheduled(cron = "0 * * * * ?")
-    // @Scheduled(cron = "0 0 13 * * ?") // Ejecuta a la 1 p.m. todos los días
-    // @Async
-    // @Transactional
-    // public void processAutomaticDebits() {
-    //     log.info("Starting automatic debit processing...");
-
-    //     // Filtra las órdenes activas con service_id = 2
-    //     List<OrderDTO> orders = this.getActiveOrdersByServiceId(2);
-    //     for (OrderDTO order : orders) {
-    //         // Obtener todos los items relacionados con la orden
-    //         List<ItemCollectionDTO> items = itemCollectionService.getItemCollectionsByOrderId(order.getOrderId());
-
-    //         // Procesar el débito automático (aquí se asume que existe un método debitProcessingService.processDebits que trabaja con DTOs)
-    //         Map<String, List<ItemCollectionDTO>> debitResults = debitProcessingService.processDebits(items);
-
-    //         // Realizar la transacción del débito automático llamando a otro módulo
-    //         RestClient restClient = RestClient.builder().baseUrl("http://otro-modulo/api/debit").build();
-    //         for (ItemCollectionDTO item : items) {
-    //             restClient.post()
-    //                 .uri("/process")
-    //                 .bodyValue(item)
-    //                 .retrieve()
-    //                 .bodyToMono(String.class)
-    //                 .block();
-    //         }
-
-    //         // Log de resultados
-    //         log.info("Order ID: {} - Fully processed items: {}, Partially processed items: {}",
-    //             order.getOrderId(),
-    //             debitResults.get("fullyProcessed").size(),
-    //             debitResults.get("partiallyProcessed").size());
-    //     }
-
-    //     log.info("Automatic debit processing completed.");
-    // }
-

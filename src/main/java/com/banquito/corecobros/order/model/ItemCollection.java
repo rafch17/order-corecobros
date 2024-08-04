@@ -30,7 +30,7 @@ public class ItemCollection {
     private Integer id;
     @Column(name = "ORDER_ID")
     private Integer orderId;
-    @Column(name = "UNIQUE_ID", length = 16)
+    @Column(name = "UNIQUIE_ID", length = 16, nullable = false)
     private String uniqueId;
     @Column(name = "DEBTOR_NAME", length = 100, nullable = false)
     private String debtorName;
