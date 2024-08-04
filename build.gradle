@@ -5,7 +5,7 @@ plugins {
 }
 
 group = 'com.banquito.corecobros'
-version = 'v1'
+version = 'V1'
 
 java {
 	toolchain {

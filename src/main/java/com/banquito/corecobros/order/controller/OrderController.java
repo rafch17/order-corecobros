@@ -100,8 +100,8 @@ public class OrderController {
     @Operation(summary = "Search orders by criteria", description = "Fetches orders based on service ID, account ID, and a date range.")
     @GetMapping("/search")
     public ResponseEntity<List<OrderDTO>> getOrdersByCriteria(
-            @RequestParam Integer serviceId,
-            @RequestParam Integer accountId,
+            @RequestParam String serviceId,
+            @RequestParam String accountId,
             @RequestParam LocalDate startDate,
             @RequestParam LocalDate endDate) {
         List<OrderDTO> orders = orderService.getOrdersByServiceIdAndAccountIdAndDateRange(
@@ -111,7 +111,7 @@ public class OrderController {
 
     @Operation(summary = "Get orders by service ID", description = "Fetches all active orders for a specific service ID.")
     @GetMapping("/service/{serviceId}")
-    public List<OrderDTO> getOrdersByServiceId(@PathVariable Integer serviceId) {
+    public List<OrderDTO> getOrdersByServiceId(@PathVariable String serviceId) {
         return orderService.getActiveOrdersByServiceId(serviceId);
     }
 }

@@ -64,9 +64,8 @@ public class ItemAutomaticDebitService {
         return itemAutomaticDebits.stream().map(s -> this.mapper.toDTO(s)).collect(Collectors.toList());
     }
 
-    public void processCsvFile(MultipartFile file, Integer orderId) throws IOException {
-        UniqueIdGeneration uniqueIdGenerator = new UniqueIdGeneration();
-        String uniqueId = uniqueIdGenerator.generateUniqueId();
+    public BigDecimal processCsvFile(MultipartFile file, Integer orderId) throws IOException {
+        BigDecimal totalAmount = BigDecimal.ZERO;
         try (InputStreamReader reader = new InputStreamReader(file.getInputStream());
                 CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT.builder().setHeader().build())) {
             for (CSVRecord csvRecord : csvParser) {
@@ -77,14 +76,17 @@ public class ItemAutomaticDebitService {
 
                 ItemAutomaticDebitDTO dto = new ItemAutomaticDebitDTO();
                 dto.setOrderId(orderId);
-                dto.setUniqueId(uniqueId);
+                dto.setUniqueId(this.generateUniqueId());
                 dto.setIdentification(identification);
                 dto.setDebtorName(debtorName);
                 dto.setDebitAccount(debitAccount);
-                dto.setDebitAmount(new BigDecimal(debitAmount));
+                BigDecimal amount = new BigDecimal(debitAmount);
+                dto.setDebitAmount(amount);
                 dto.setStatus("PEN");
 
                 this.createItemAutomaticDebit(dto);
+
+                totalAmount = totalAmount.add(amount);
             }
 
             log.info("Archivo CSV procesado con éxito.");
@@ -92,8 +94,23 @@ public class ItemAutomaticDebitService {
             log.error("Error procesando el archivo CSV", e);
             throw e;
         }
-
+        return totalAmount;
     }
+
+    public String generateUniqueId() {
+        UniqueIdGeneration uniqueIdGenerator = new UniqueIdGeneration();
+        String uniqueId = "";
+        boolean unique = false;
+
+        while (!unique) {
+            uniqueId = uniqueIdGenerator.generateUniqueId();
+            if (!itemAutomaticDebitRepository.existsByUniqueId(uniqueId)) {
+                unique = true;
+            }
+        }
+        return uniqueId;
+    }
+
 
     public List<ItemAutomaticDebitDTO> getItemAutomaticDebitsByOrderId(Integer id) {
         List<ItemAutomaticDebit> itemAutomaticDebits = this.itemAutomaticDebitRepository.findByOrderId(id);

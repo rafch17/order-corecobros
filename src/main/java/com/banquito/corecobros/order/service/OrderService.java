@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClient;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.http.MediaType;
@@ -42,11 +43,15 @@ public class OrderService {
     private final ItemAutomaticDebitService itemAutomaticDebitService;
     private final ItemAutomaticDebitRepository itemAutomaticDebitRepository;
     private final AutomaticDebitPaymentRecordRepository automaticDebitPaymentRecordRepository;
+    private final PaymentRecordService paymentRecordService;
+
 
     public OrderService(OrderRepository orderRepository, OrderMapper orderMapper,
             ItemCollectionService itemCollectionService, ItemCollectionRepository itemCollectionRepository,
-            ItemAutomaticDebitService itemAutomaticDebitService, ItemAutomaticDebitRepository itemAutomaticDebitRepository,
-            AutomaticDebitPaymentRecordRepository automaticDebitPaymentRecordRepository) {
+            ItemAutomaticDebitService itemAutomaticDebitService,
+            ItemAutomaticDebitRepository itemAutomaticDebitRepository,
+            AutomaticDebitPaymentRecordRepository automaticDebitPaymentRecordRepository,
+            PaymentRecordService paymentRecordService) {
         this.orderRepository = orderRepository;
         this.orderMapper = orderMapper;
         this.itemCollectionService = itemCollectionService;
@@ -54,13 +59,16 @@ public class OrderService {
         this.itemAutomaticDebitService = itemAutomaticDebitService;
         this.itemAutomaticDebitRepository = itemAutomaticDebitRepository;
         this.automaticDebitPaymentRecordRepository = automaticDebitPaymentRecordRepository;
+        this.paymentRecordService = paymentRecordService;
     }
+
 
     public void createOrderCollection(MultipartFile file, OrderDTO dto) {
         Order order = this.orderMapper.toPersistence(dto);
         order.setStatus("PEN");
-        // order.setServiceId("LEY0053994");
-        order.setServiceId(1);
+        order.setServiceId("LEY0053994");
+        order.setAccountId("ZGE0000866");
+        order.setTotalAmount(BigDecimal.ZERO);
         String uniqueId = generateUniqueId();
 
         while (orderRepository.existsByUniqueId(uniqueId)){
@@ -71,7 +79,9 @@ public class OrderService {
         log.info("Se creo la orden: {}", savedOrder);
 
         try {
-            itemCollectionService.processCsvFile(file, savedOrder.getOrderId());
+            BigDecimal totalAmout = itemCollectionService.processCsvFile(file, savedOrder.getOrderId());
+            savedOrder.setTotalAmount(totalAmout);
+            this.orderRepository.save(savedOrder);
         } catch (Exception e) {
             log.info("Error al procesar el archivo CSV", e);
             throw new RuntimeException("Error al procesar el archivo CSV");
@@ -82,9 +92,9 @@ public class OrderService {
     public void createOrderAutomaticDebit(MultipartFile file, OrderDTO dto) {
         Order order = this.orderMapper.toPersistence(dto);
         order.setStatus("PEN");
-        // order.setServiceId("JXM0025321");
-        order.setServiceId(2);
-        order.setAccountId(2);
+        order.setServiceId("JXM0025321");
+        order.setAccountId("ZGE0000866");
+        order.setTotalAmount(BigDecimal.ZERO);
         String uniqueId = generateUniqueId();
 
         while (orderRepository.existsByUniqueId(uniqueId)){
@@ -95,7 +105,9 @@ public class OrderService {
         log.info("Se creo la orden: {}", savedOrder);
 
         try {
-            itemAutomaticDebitService.processCsvFile(file, savedOrder.getOrderId());
+            BigDecimal totalAmount = itemAutomaticDebitService.processCsvFile(file, savedOrder.getOrderId());
+            savedOrder.setTotalAmount(totalAmount);
+            this.orderRepository.save(savedOrder);
         } catch (Exception e) {
             log.info("Error al procesar el archivo CSV", e);
             throw new RuntimeException("Error al procesar el archivo CSV");
@@ -146,14 +158,14 @@ public class OrderService {
     }
 
     public List<OrderDTO> getOrdersByServiceIdAndAccountIdAndDateRange(
-            Integer serviceId, Integer accountId, LocalDate startDate, LocalDate endDate) {
+            String serviceId, String accountId, LocalDate startDate, LocalDate endDate) {
         List<Order> orders = orderRepository
                 .findByServiceIdAndAccountIdAndStartDateGreaterThanEqualAndEndDateLessThanEqual(
                         serviceId, accountId, startDate, endDate);
         return orders.stream().map(s -> this.orderMapper.toDTO(s)).collect(Collectors.toList());
     }
 
-    public List<OrderDTO> getActiveOrdersByServiceId(Integer serviceId) {
+    public List<OrderDTO> getActiveOrdersByServiceId(String serviceId) {
         LocalDate currentDate = LocalDate.now();
         List<Order> orders = orderRepository
                 .findByServiceIdAndStatusAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
@@ -161,6 +173,17 @@ public class OrderService {
         return orders.stream()
                 .map(orderMapper::toDTO)
                 .collect(Collectors.toList());
+    }
+
+    public String getCompanyNameByAccountId(String accoundId){
+        RestClient restClient = RestClient.builder()
+        .baseUrl("http://localhost:8080/api/v1/companies")
+        .build();
+        return restClient.get()
+        .uri("/account/{accountId}", accoundId)
+        .accept(MediaType.APPLICATION_JSON)
+        .retrieve()
+        .body(String.class);
     }
 
     @Transactional
@@ -204,26 +227,26 @@ public class OrderService {
         this.expireItemsAfterOrderEndDate();
     }
 
-    @Scheduled(cron = "0 */3 * * * ?")// Ejecuta a la 1 p.m. todos los días
+    @Scheduled(cron = "0 */3 * * * ?")
     @Async
     @Transactional
     public void processAutomaticDebits() {
         log.info("Iniciando procesamiento de débito automático...");
-
-        List<OrderDTO> orders = this.getActiveOrdersByServiceId(2);
+        List<OrderDTO> orders = this.getActiveOrdersByServiceId("JXM0025321");
         for (OrderDTO order : orders) {
             List<ItemAutomaticDebitDTO> items = itemAutomaticDebitService.getItemsByOrderIdAndStatus(order.getOrderId(), "PEN");
 
             WebClient webClient = WebClient.builder().baseUrl("http://localhost:8080/api/v1/account-transactions").build();
             for (ItemAutomaticDebitDTO item : items) {
+                String companyName = this.getCompanyNameByAccountId(order.getAccountId());
                 AccountTransactionDTO transactionDTO = AccountTransactionDTO.builder()
-                    .accountId(order.getAccountId())
+                    .accountId(5)
                     .uniqueId(order.getUniqueId())
                     .codeChannel("1")
                     .uniqueKey(order.getUniqueId())
                     .transactionType("DEB")
                     .transactionSubtype("TRANSFER")
-                    .reference(order.getDescription())
+                    .reference("COBRO AUTOMATICO " + companyName)
                     .amount(item.getDebitAmount())
                     .creditorAccount("2273445678")
                     .debitorAccount(item.getDebitAccount())
@@ -261,6 +284,7 @@ public class OrderService {
                     AutomaticDebitPaymentRecord automaticDebitPaymentRecord = new AutomaticDebitPaymentRecord();
                     automaticDebitPaymentRecord.setItemAutomaticDebitId(record.getItemAutomaticDebitId());
                     automaticDebitPaymentRecord.setItemCommissionId(record.getItemCommissionId());
+                    automaticDebitPaymentRecord.setUniqueId(paymentRecordService.generateUniqueId());
                     automaticDebitPaymentRecord.setOutstandingBalance(record.getOutstandingBalance());
                     automaticDebitPaymentRecord.setDebitAmount(record.getDebitAmount());
                     automaticDebitPaymentRecord.setPaymentDate(record.getPaymentDate());

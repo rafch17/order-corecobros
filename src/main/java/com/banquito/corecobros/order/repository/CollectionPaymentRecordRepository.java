@@ -11,4 +11,6 @@ public interface CollectionPaymentRecordRepository extends JpaRepository<Collect
     List<CollectionPaymentRecord> findByItemCollectionIdIn(List<Integer> itemCollectionIds);
 
     List<CollectionPaymentRecord> findByItemCollectionId(Integer itemCollectionId);
+
+    boolean existsByUniqueId(String uniqueId);
 }

@@ -10,8 +10,8 @@ import lombok.Value;
 public class OrderDTO {
     private Integer orderId;
     private String uniqueId;
-    private Integer serviceId;
-    private Integer accountId;
+    private String serviceId;
+    private String accountId;
     private LocalDate startDate;
     private LocalDate endDate;
     private BigDecimal totalAmount;

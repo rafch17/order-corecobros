@@ -39,7 +39,7 @@ public class PaymentRecordController {
 
     @Operation(summary = "Get payment records by account ID", description = "Fetches a list of collection payment records associated with a specific account ID.")
     @GetMapping("/records/{accountId}")
-    public List<CollectionPaymentRecordDTO> getPaymentRecordsByAccountId(@PathVariable Integer accountId) {
+    public List<CollectionPaymentRecordDTO> getPaymentRecordsByAccountId(@PathVariable String accountId) {
         return paymentRecordService.findCollectionPaymentRecordsByAccountId(accountId);
     }
 

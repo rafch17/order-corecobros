@@ -115,9 +115,8 @@ public class ItemCollectionService {
         return this.itemCollectionMapper.toDTO(itemCollections.get(0));
     }
 
-    public void processCsvFile(MultipartFile file, Integer orderId) throws IOException {
-        UniqueIdGeneration uniqueIdGenerator = new UniqueIdGeneration();
-        String uniqueId = uniqueIdGenerator.generateUniqueId();
+    public BigDecimal processCsvFile(MultipartFile file, Integer orderId) throws IOException {
+        BigDecimal totalAmount = BigDecimal.ZERO;
         try (InputStreamReader reader = new InputStreamReader(file.getInputStream());
                 CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT.builder().setHeader().build())) {
             for (CSVRecord csvRecord : csvParser) {
@@ -127,18 +126,36 @@ public class ItemCollectionService {
 
                 ItemCollectionDTO dto = new ItemCollectionDTO();
                 dto.setOrderId(orderId);
-                dto.setUniqueId(uniqueId);
+                dto.setUniqueId(this.generateUniqueId());
                 dto.setDebtorName(debtorName);
                 dto.setCounterpart(counterpart);
-                dto.setCollectionAmount(new BigDecimal(collectionAmount));
+                BigDecimal amount = new BigDecimal(collectionAmount);
+                dto.setCollectionAmount(amount);
                 dto.setStatus("PEN");
 
                 this.createItemCollection(dto);
+
+                totalAmount = totalAmount.add(amount);
             }
             log.info("Archivo CSV procesado con éxito.");
         } catch (IOException e) {
             log.error("Error procesando el archivo CSV", e);
             throw e;
         }
+        return totalAmount;
+    }
+
+    public String generateUniqueId() {
+        UniqueIdGeneration uniqueIdGenerator = new UniqueIdGeneration();
+        String uniqueId = "";
+        boolean unique = false;
+
+        while (!unique) {
+            uniqueId = uniqueIdGenerator.generateUniqueId();
+            if (!itemCollectionRepository.existsByUniqueId(uniqueId)) {
+                unique = true;
+            }
+        }
+        return uniqueId;
     }
 }

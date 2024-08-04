@@ -31,10 +31,10 @@ public class Order {
     private Integer orderId;
     @Column(name = "UNIQUE_ID", length = 16)
     private String uniqueId;
-    @Column(name = "SERVICE_ID", nullable = false)
-    private Integer serviceId;
-    @Column(name = "ACCOUNT_ID")
-    private Integer accountId;
+    @Column(name = "SERVICE_ID", length = 100)
+    private String serviceId;
+    @Column(name = "ACCOUNT_ID", length = 100)
+    private String accountId;
     @Temporal(TemporalType.DATE)
     @Column(name = "START_DATE", nullable = false)
     private LocalDate startDate;

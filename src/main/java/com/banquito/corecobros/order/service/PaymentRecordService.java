@@ -16,6 +16,7 @@ import com.banquito.corecobros.order.model.Order;
 import com.banquito.corecobros.order.repository.OrderRepository;
 import com.banquito.corecobros.order.util.mapper.AutomaticDebitPaymentRecordMapper;
 import com.banquito.corecobros.order.util.mapper.CollectionPaymentRecordMapper;
+import com.banquito.corecobros.order.util.uniqueId.UniqueIdGeneration;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -54,11 +55,6 @@ public class PaymentRecordService {
         return savedRecord;
     }
 
-    // public List<CollectionPaymentRecord> getPaymentRecordsByAccountId(Integer accountId) {
-    //     log.info("Va a buscar por Cuenta Id:");
-    //     return collectionPaymentRecordRepository.findByAccountId(accountId);
-    // } 
-
     public List<CollectionPaymentRecordDTO> getAll(){
         log.info("Se va a retornar todaos los registros de Collections");
         List<CollectionPaymentRecord> records = collectionPaymentRecordRepository.findAll();
@@ -84,7 +80,7 @@ public class PaymentRecordService {
         return this.collectionPaymentRecordMapper.toDTO(updatedRecord);
     }
 
-    public List<CollectionPaymentRecordDTO> findCollectionPaymentRecordsByAccountId(Integer accountId) {
+    public List<CollectionPaymentRecordDTO> findCollectionPaymentRecordsByAccountId(String accountId) {
         List<Order> orders = orderRepository.findByAccountId(accountId);
 
         List<Integer> itemCollectionIds = orders.stream()
@@ -105,6 +101,20 @@ public class PaymentRecordService {
         List<CollectionPaymentRecord> records = this.collectionPaymentRecordRepository
                 .findByItemCollectionId(itemCollectionId);
         return records.stream().map(this.collectionPaymentRecordMapper::toDTO).collect(Collectors.toList());
+    }
+
+    public String generateUniqueId() {
+        UniqueIdGeneration uniqueIdGenerator = new UniqueIdGeneration();
+        String uniqueId = "";
+        boolean unique = false;
+
+        while (!unique) {
+            uniqueId = uniqueIdGenerator.generateUniqueId();
+            if (!automaticDebitPaymentRecordRepository.existsByUniqueId(uniqueId)) {
+                unique = true;
+            }
+        }
+        return uniqueId;
     }
 
 }

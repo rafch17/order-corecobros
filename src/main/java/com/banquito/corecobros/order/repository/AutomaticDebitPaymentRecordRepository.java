@@ -7,5 +7,5 @@ import com.banquito.corecobros.order.model.AutomaticDebitPaymentRecord;
 
 @Repository
 public interface AutomaticDebitPaymentRecordRepository extends JpaRepository<AutomaticDebitPaymentRecord, Integer> {
-
+    boolean existsByUniqueId(String uniqueId);
 }
