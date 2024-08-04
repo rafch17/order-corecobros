@@ -13,22 +13,23 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.banquito.corecobros.order.dto.ItemCollectionDTO;
-import com.banquito.corecobros.order.repository.OrderRepository;
 import com.banquito.corecobros.order.service.ItemCollectionService;
 
-@CrossOrigin(origins = "*", allowedHeaders = "*", methods = { RequestMethod.GET, RequestMethod.POST,
-        RequestMethod.PUT })
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+@CrossOrigin(origins = "*", allowedHeaders = "*", methods = { RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT })
 @RestController
 @RequestMapping("/api/v1/collections")
+@Tag(name = "ItemCollection", description = "APIs related to Item Collections")
 public class ItemCollectionController {
     private final ItemCollectionService itemCollectionService;
-    private OrderRepository orderRepository;
 
-    public ItemCollectionController(ItemCollectionService itemCollectionService, OrderRepository orderRepository) {
+    public ItemCollectionController(ItemCollectionService itemCollectionService) {
         this.itemCollectionService = itemCollectionService;
-        this.orderRepository = orderRepository;
     }
 
+    @Operation(summary = "Search item collections by counterpart and company", description = "Fetches item collections based on counterpart and company ID.")
     @GetMapping("/search")
     public ResponseEntity<List<ItemCollectionDTO>> getItemCollectionsByCounterpartAndCompany(
             @RequestParam String counterpart, @RequestParam String companyId) {
@@ -36,11 +37,13 @@ public class ItemCollectionController {
         return ResponseEntity.ok(items);
     }
 
+    @Operation(summary = "Get all item collections", description = "Fetches a list of all item collections.")
     @GetMapping
     public ResponseEntity<List<ItemCollectionDTO>> getAllItemCollections() {
         return ResponseEntity.ok(this.itemCollectionService.obtainAllItemCollections());
     }
 
+    @Operation(summary = "Create a new item collection", description = "Creates a new item collection with the provided details.")
     @PostMapping
     public ResponseEntity<Void> createItemCollection(ItemCollectionDTO itemCollectionDTO) {
         try {
@@ -51,6 +54,7 @@ public class ItemCollectionController {
         }
     }
 
+    @Operation(summary = "Get an item collection by ID", description = "Fetches the details of an item collection by its ID.")
     @GetMapping("/{id}")
     public ResponseEntity<ItemCollectionDTO> getItemCollectionById(Integer id) {
         try {
@@ -60,32 +64,23 @@ public class ItemCollectionController {
         }
     }
 
+    @Operation(summary = "Get item collections by status", description = "Fetches a list of item collections based on their status.")
     @GetMapping("/item-collections/{status}")
     public ResponseEntity<List<ItemCollectionDTO>> getItemCollectionsByStatus(String status) {
         return ResponseEntity.ok(this.itemCollectionService.obtainItemCollectionsByStatus(status));
     }
 
-    // @PostMapping("/upload")
-    // public ResponseEntity<Void> uploadCsvFile(@RequestParam("file") MultipartFile
-    // file) {
-    // try {
-    // itemCollectionService.processCsvFile(file);
-    // return ResponseEntity.ok().build();
-    // } catch (IOException e) {
-    // return ResponseEntity.status(500).build();
-    // }
-    // }
-
+    @Operation(summary = "Get active item collections", description = "Fetches a list of all active item collections.")
     @GetMapping("/active")
     public ResponseEntity<List<ItemCollectionDTO>> getActiveItemCollections() {
         List<ItemCollectionDTO> itemCollections = itemCollectionService.findActiveItemCollections();
         return ResponseEntity.ok(itemCollections);
     }
 
+    @Operation(summary = "Get item collections by order ID", description = "Fetches a list of item collections associated with a specific order ID.")
     @GetMapping("/by-order/{orderId}")
     public ResponseEntity<List<ItemCollectionDTO>> getItemCollectionsByOrderId(@PathVariable Integer orderId) {
         List<ItemCollectionDTO> items = itemCollectionService.getItemCollectionsByOrderId(orderId);
         return ResponseEntity.ok(items);
-
     }
 }

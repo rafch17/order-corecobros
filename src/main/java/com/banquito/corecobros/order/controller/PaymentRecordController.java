@@ -15,10 +15,13 @@ import org.springframework.web.bind.annotation.RestController;
 import com.banquito.corecobros.order.dto.CollectionPaymentRecordDTO;
 import com.banquito.corecobros.order.service.PaymentRecordService;
 
-@CrossOrigin(origins = "*", allowedHeaders = "*", methods = { RequestMethod.GET, RequestMethod.POST,
-    RequestMethod.PUT })
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+@CrossOrigin(origins = "*", allowedHeaders = "*", methods = { RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT })
 @RestController
 @RequestMapping("/api/v1/payments")
+@Tag(name = "PaymentRecordController", description = "APIs related to Payment Records")
 public class PaymentRecordController {
     private final PaymentRecordService paymentRecordService;
 
@@ -26,18 +29,21 @@ public class PaymentRecordController {
         this.paymentRecordService = paymentRecordService;
     }
 
+    @Operation(summary = "Update a collection payment record", description = "Updates the details of a collection payment record by its ID.")
     @PutMapping("/{id}")
-    public ResponseEntity<CollectionPaymentRecordDTO> updateCollectionPaymentRecord(@PathVariable Integer id, 
-                                                                                   @RequestBody CollectionPaymentRecordDTO dto) {
+    public ResponseEntity<CollectionPaymentRecordDTO> updateCollectionPaymentRecord(@PathVariable Integer id,
+            @RequestBody CollectionPaymentRecordDTO dto) {
         CollectionPaymentRecordDTO updatedRecord = paymentRecordService.updatePaymentRecord(id, dto);
         return ResponseEntity.ok(updatedRecord);
     }
 
+    @Operation(summary = "Get payment records by account ID", description = "Fetches a list of collection payment records associated with a specific account ID.")
     @GetMapping("/records/{accountId}")
     public List<CollectionPaymentRecordDTO> getPaymentRecordsByAccountId(@PathVariable Integer accountId) {
         return paymentRecordService.findCollectionPaymentRecordsByAccountId(accountId);
     }
 
+    @Operation(summary = "Get collection payment records by item collection ID", description = "Fetches a list of collection payment records associated with a specific item collection ID.")
     @GetMapping("/by-item-collection/{itemCollectionId}")
     public ResponseEntity<List<CollectionPaymentRecordDTO>> getCollectionPaymentRecordsByItemCollectionId(
             @PathVariable Integer itemCollectionId) {

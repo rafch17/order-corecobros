@@ -17,6 +17,7 @@ import com.banquito.corecobros.order.dto.ItemCollectionDTO;
 import com.banquito.corecobros.order.model.ItemCollection;
 import com.banquito.corecobros.order.repository.ItemCollectionRepository;
 import com.banquito.corecobros.order.util.mapper.ItemCollectionMapper;
+import com.banquito.corecobros.order.util.uniqueId.UniqueIdGeneration;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -115,6 +116,8 @@ public class ItemCollectionService {
     }
 
     public void processCsvFile(MultipartFile file, Integer orderId) throws IOException {
+        UniqueIdGeneration uniqueIdGenerator = new UniqueIdGeneration();
+        String uniqueId = uniqueIdGenerator.generateUniqueId();
         try (InputStreamReader reader = new InputStreamReader(file.getInputStream());
                 CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT.builder().setHeader().build())) {
             for (CSVRecord csvRecord : csvParser) {
@@ -124,6 +127,7 @@ public class ItemCollectionService {
 
                 ItemCollectionDTO dto = new ItemCollectionDTO();
                 dto.setOrderId(orderId);
+                dto.setUniqueId(uniqueId);
                 dto.setDebtorName(debtorName);
                 dto.setCounterpart(counterpart);
                 dto.setCollectionAmount(new BigDecimal(collectionAmount));

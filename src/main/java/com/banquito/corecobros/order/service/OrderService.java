@@ -204,11 +204,11 @@ public class OrderService {
         this.expireItemsAfterOrderEndDate();
     }
 
-    @Scheduled(cron = "0 0 13 * * ?") // Ejecuta a la 1 p.m. todos los días
+    @Scheduled(cron = "0 */3 * * * ?")// Ejecuta a la 1 p.m. todos los días
     @Async
     @Transactional
     public void processAutomaticDebits() {
-        log.info("Starting automatic debit processing...");
+        log.info("Iniciando procesamiento de débito automático...");
 
         List<OrderDTO> orders = this.getActiveOrdersByServiceId(2);
         for (OrderDTO order : orders) {
@@ -268,13 +268,13 @@ public class OrderService {
                     automaticDebitPaymentRecord.setStatus(record.getStatus());
 
                     automaticDebitPaymentRecordRepository.save(automaticDebitPaymentRecord);
+                    
+                    log.info("Procesamiento de débito automático completado.");
                 } catch (Exception e) {
-                    log.error("Error processing debit for item {}: {}", item.getId(), e.getMessage());
+                    log.error("Error al procesar el débito del item {}: {}", item.getId(), e.getMessage());
                 }
             }
         }
-
-        log.info("Automatic debit processing completed.");
     }
 
 }

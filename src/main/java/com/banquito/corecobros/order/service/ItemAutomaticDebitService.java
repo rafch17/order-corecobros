@@ -16,6 +16,7 @@ import com.banquito.corecobros.order.dto.ItemAutomaticDebitDTO;
 import com.banquito.corecobros.order.model.ItemAutomaticDebit;
 import com.banquito.corecobros.order.repository.ItemAutomaticDebitRepository;
 import com.banquito.corecobros.order.util.mapper.ItemAutomaticDebitMapper;
+import com.banquito.corecobros.order.util.uniqueId.UniqueIdGeneration;
 
 import lombok.extern.slf4j.Slf4j;
 @Slf4j
@@ -64,6 +65,8 @@ public class ItemAutomaticDebitService {
     }
 
     public void processCsvFile(MultipartFile file, Integer orderId) throws IOException {
+        UniqueIdGeneration uniqueIdGenerator = new UniqueIdGeneration();
+        String uniqueId = uniqueIdGenerator.generateUniqueId();
         try (InputStreamReader reader = new InputStreamReader(file.getInputStream());
                 CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT.builder().setHeader().build())) {
             for (CSVRecord csvRecord : csvParser) {
@@ -74,6 +77,7 @@ public class ItemAutomaticDebitService {
 
                 ItemAutomaticDebitDTO dto = new ItemAutomaticDebitDTO();
                 dto.setOrderId(orderId);
+                dto.setUniqueId(uniqueId);
                 dto.setIdentification(identification);
                 dto.setDebtorName(debtorName);
                 dto.setDebitAccount(debitAccount);
