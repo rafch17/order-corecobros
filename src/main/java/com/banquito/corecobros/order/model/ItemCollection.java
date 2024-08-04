@@ -30,7 +30,7 @@ public class ItemCollection {
     private Integer id;
     @Column(name = "ORDER_ID")
     private Integer orderId;
-    @Column(name = "UNIQUIE_ID", length = 16, nullable = false)
+    @Column(name = "UNIQUE_ID", length = 16, nullable = false)
     private String uniqueId;
     @Column(name = "DEBTOR_NAME", length = 100, nullable = false)
     private String debtorName;
@@ -40,12 +40,12 @@ public class ItemCollection {
     private BigDecimal collectionAmount;
     @Column(name = "STATUS", length = 3, nullable = false)
     private String status;
-    
+
     @OneToMany(mappedBy = "itemCollection")
     private List<CollectionPaymentRecord> collectionPaymentRecords;
 
     @ManyToOne
-    @JoinColumn(name = "ORDER_ID", referencedColumnName = "ORDER_ID",insertable = false, updatable = false)
+    @JoinColumn(name = "ORDER_ID", referencedColumnName = "ORDER_ID", insertable = false, updatable = false)
     private Order order;
 
     public ItemCollection(Integer id) {

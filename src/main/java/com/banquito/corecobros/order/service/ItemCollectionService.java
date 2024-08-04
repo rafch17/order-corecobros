@@ -25,10 +25,10 @@ public class ItemCollectionService {
     private final ItemCollectionRepository itemCollectionRepository;
     private final ItemCollectionMapper itemCollectionMapper;
     private final WebClient webClient;
-    
 
     public ItemCollectionService(ItemCollectionRepository itemCollectionRepository,
-            ItemCollectionMapper itemCollectionMapper, WebClient webClient, WebClient.Builder webClientBuilder) {
+            ItemCollectionMapper itemCollectionMapper,
+            WebClient.Builder webClientBuilder) {
         this.itemCollectionRepository = itemCollectionRepository;
         this.itemCollectionMapper = itemCollectionMapper;
         this.webClient = webClientBuilder.baseUrl("http://localhost:8080/api/v1/companies").build();
@@ -113,6 +113,7 @@ public class ItemCollectionService {
         }
         return this.itemCollectionMapper.toDTO(itemCollections.get(0));
     }
+
     public void processCsvFile(MultipartFile file, Integer orderId) throws IOException {
         try (InputStreamReader reader = new InputStreamReader(file.getInputStream());
                 CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT.builder().setHeader().build())) {

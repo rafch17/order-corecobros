@@ -17,7 +17,7 @@ import com.banquito.corecobros.order.repository.OrderRepository;
 import com.banquito.corecobros.order.service.ItemCollectionService;
 
 @CrossOrigin(origins = "*", allowedHeaders = "*", methods = { RequestMethod.GET, RequestMethod.POST,
-    RequestMethod.PUT })
+        RequestMethod.PUT })
 @RestController
 @RequestMapping("/api/v1/collections")
 public class ItemCollectionController {
@@ -66,13 +66,14 @@ public class ItemCollectionController {
     }
 
     // @PostMapping("/upload")
-    // public ResponseEntity<Void> uploadCsvFile(@RequestParam("file") MultipartFile file) {
-    //     try {
-    //         itemCollectionService.processCsvFile(file);
-    //         return ResponseEntity.ok().build();
-    //     } catch (IOException e) {
-    //         return ResponseEntity.status(500).build();
-    //     }
+    // public ResponseEntity<Void> uploadCsvFile(@RequestParam("file") MultipartFile
+    // file) {
+    // try {
+    // itemCollectionService.processCsvFile(file);
+    // return ResponseEntity.ok().build();
+    // } catch (IOException e) {
+    // return ResponseEntity.status(500).build();
+    // }
     // }
 
     @GetMapping("/active")
