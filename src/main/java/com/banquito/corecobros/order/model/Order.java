@@ -47,7 +47,8 @@ public class Order {
     private String description;
     @Column(name = "STATUS", length = 3, nullable = false)
     private String status;
-
+    @Column(name = "COMPANY_UID", length = 50, nullable = false)
+    private String companyUid;;
 
     @OneToMany(mappedBy = "order")
     private List<ItemCollection> itemCollections;

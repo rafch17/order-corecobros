@@ -5,6 +5,7 @@ import java.math.BigDecimal;
 public class ItemCollectionDTO {
     private Integer id;
     private Integer orderId;
+    private Integer itemCommissionId;
     private String uniqueId;
     private String debtorName;
     private String counterpart;
@@ -22,6 +23,12 @@ public class ItemCollectionDTO {
     }
     public void setOrderId(Integer orderId) {
         this.orderId = orderId;
+    }
+    public Integer getItemCommissionId() {
+        return itemCommissionId;
+    }
+    public void setItemCommissionId(Integer itemCommissionId) {
+        this.itemCommissionId = itemCommissionId;
     }
     public String getUniqueId() {
         return uniqueId;
@@ -53,7 +60,5 @@ public class ItemCollectionDTO {
     public void setStatus(String status) {
         this.status = status;
     }
-
     
-
 }

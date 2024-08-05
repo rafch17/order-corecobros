@@ -17,4 +17,5 @@ public class OrderDTO {
     private BigDecimal totalAmount;
     private String description;
     private String status;
+    private String companyUid;
 }

@@ -64,7 +64,7 @@ public class ItemAutomaticDebitService {
         return itemAutomaticDebits.stream().map(s -> this.mapper.toDTO(s)).collect(Collectors.toList());
     }
 
-    public BigDecimal processCsvFile(MultipartFile file, Integer orderId) throws IOException {
+    public BigDecimal processCsvFile(MultipartFile file, Integer orderId, String companyUid, String uniqueId) throws IOException {
         BigDecimal totalAmount = BigDecimal.ZERO;
         try (InputStreamReader reader = new InputStreamReader(file.getInputStream());
                 CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT.builder().setHeader().build())) {
@@ -76,6 +76,7 @@ public class ItemAutomaticDebitService {
 
                 ItemAutomaticDebitDTO dto = new ItemAutomaticDebitDTO();
                 dto.setOrderId(orderId);
+                dto.setItemCommissionId(1);
                 dto.setUniqueId(this.generateUniqueId());
                 dto.setIdentification(identification);
                 dto.setDebtorName(debtorName);

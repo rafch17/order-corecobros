@@ -69,6 +69,7 @@ public class OrderService {
         order.setServiceId("LEY0053994");
         order.setAccountId("ZGE0000866");
         order.setTotalAmount(BigDecimal.ZERO);
+        order.setCompanyUid("QYV0019768");
         String uniqueId = generateUniqueId();
 
         while (orderRepository.existsByUniqueId(uniqueId)){
@@ -79,7 +80,7 @@ public class OrderService {
         log.info("Se creo la orden: {}", savedOrder);
 
         try {
-            BigDecimal totalAmout = itemCollectionService.processCsvFile(file, savedOrder.getOrderId());
+            BigDecimal totalAmout = itemCollectionService.processCsvFile(file, savedOrder.getOrderId(), savedOrder.getCompanyUid(), savedOrder.getUniqueId());
             savedOrder.setTotalAmount(totalAmout);
             this.orderRepository.save(savedOrder);
         } catch (Exception e) {
@@ -95,6 +96,7 @@ public class OrderService {
         order.setServiceId("JXM0025321");
         order.setAccountId("ZGE0000866");
         order.setTotalAmount(BigDecimal.ZERO);
+        order.setCompanyUid("QYV0019768");
         String uniqueId = generateUniqueId();
 
         while (orderRepository.existsByUniqueId(uniqueId)){
@@ -105,7 +107,7 @@ public class OrderService {
         log.info("Se creo la orden: {}", savedOrder);
 
         try {
-            BigDecimal totalAmount = itemAutomaticDebitService.processCsvFile(file, savedOrder.getOrderId());
+            BigDecimal totalAmount = itemAutomaticDebitService.processCsvFile(file, savedOrder.getOrderId(), savedOrder.getCompanyUid(), savedOrder.getUniqueId());
             savedOrder.setTotalAmount(totalAmount);
             this.orderRepository.save(savedOrder);
         } catch (Exception e) {
@@ -227,78 +229,99 @@ public class OrderService {
         this.expireItemsAfterOrderEndDate();
     }
 
-    @Scheduled(cron = "0 */3 * * * ?")
+    @Scheduled(cron = "0 * * * * ?")
     @Async
     @Transactional
     public void processAutomaticDebits() {
         log.info("Iniciando procesamiento de débito automático...");
         List<OrderDTO> orders = this.getActiveOrdersByServiceId("JXM0025321");
+        log.info("Órdenes activas encontradas: {}", orders.size());
+        
         for (OrderDTO order : orders) {
+            log.info("Procesando orden: {}", order.getOrderId());
             List<ItemAutomaticDebitDTO> items = itemAutomaticDebitService.getItemsByOrderIdAndStatus(order.getOrderId(), "PEN");
-
-            WebClient webClient = WebClient.builder().baseUrl("http://localhost:8080/api/v1/account-transactions").build();
+            log.info("Items pendientes encontrados para la orden {}: {}", order.getOrderId(), items.size());
+    
+            WebClient webClient = WebClient.builder().baseUrl("http://localhost:8080/Account-Microservice/api/v1/account-transactions").build();
             for (ItemAutomaticDebitDTO item : items) {
-                String companyName = this.getCompanyNameByAccountId(order.getAccountId());
+                // String companyName = this.getCompanyNameByAccountId(order.getAccountId());
+                log.info("Procesando item {} de la orden {}, cuenta deudora: {}, monto: {}", item.getId(), order.getOrderId(), item.getDebitAccount(), item.getDebitAmount());
+
                 AccountTransactionDTO transactionDTO = AccountTransactionDTO.builder()
-                    .accountId(5)
-                    .uniqueId(order.getUniqueId())
-                    .codeChannel("1")
-                    .uniqueKey(order.getUniqueId())
+                    .accountId(47)
+                    .codeChannel("CHA007363")
                     .transactionType("DEB")
-                    .transactionSubtype("TRANSFER")
-                    .reference("COBRO AUTOMATICO " + companyName)
+                    .reference("COBRO AUTOMATICO ")
                     .amount(item.getDebitAmount())
                     .creditorAccount("2273445678")
                     .debitorAccount(item.getDebitAccount())
+                    .commission(BigDecimal.valueOf(1.50))
                     .createDate(LocalDateTime.now())
-                    .applyTax(false)
                     .parentTransactionKey(null)
-                    .status("PEN")
+                    .status("")
                     .build();
-
+    
                 try {
-                    Mono<ResponseTransactionDTO> responseMono = webClient.post()
+                    log.info("Enviando solicitud de débito automático para item {}...", item.getId());
+                    Mono<AccountTransactionDTO> responseMono = webClient.post()
                         .uri("")
                         .contentType(MediaType.APPLICATION_JSON)
                         .bodyValue(transactionDTO)
                         .retrieve()
-                        .bodyToMono(ResponseTransactionDTO.class);
-
-                    ResponseTransactionDTO response = responseMono.block(); 
-
-                    AutomaticDebitPaymentRecordDTO record = new AutomaticDebitPaymentRecordDTO();
-                    record.setItemAutomaticDebitId(item.getId());
-                    record.setItemCommissionId(6);
-                    record.setOutstandingBalance(response.getPendiente());
-                    record.setDebitAmount(item.getDebitAmount());
-                    record.setPaymentDate(response.getCreateDate());
-                    
-                    if (response.getPendiente().compareTo(BigDecimal.ZERO) > 0) {
-                        record.setPaymentType("PAR");
-                        record.setStatus("PEN");
-                    } else {
-                        record.setPaymentType("TOT");
-                        record.setStatus("PAG");
-                    }
-
+                        .bodyToMono(AccountTransactionDTO.class);
+    
+                    AccountTransactionDTO response = responseMono.block();
+                    log.info("Respuesta recibida para item {}: {}", item.getId(), response);
+    
+                    AccountTransactionDTO updatedResponse = AccountTransactionDTO.builder()
+                        .accountId(response.getAccountId())
+                        .codeChannel(response.getCodeChannel())
+                        .amount(response.getAmount())
+                        .debitorAccount(response.getDebitorAccount())
+                        .creditorAccount(response.getCreditorAccount())
+                        .commission(response.getCommission())
+                        .transactionType(response.getPendiente().compareTo(BigDecimal.ZERO) > 0 ? "PAR" : "TOT")
+                        .reference(response.getReference())
+                        .parentTransactionKey(response.getParentTransactionKey())
+                        .createDate(response.getCreateDate())
+                        .status(response.getPendiente().compareTo(BigDecimal.ZERO) > 0 ? "PEN" : "PAG")
+                        .pendiente(response.getPendiente())
+                        .build();
+    
+                    // Save the record using your repository or service
                     AutomaticDebitPaymentRecord automaticDebitPaymentRecord = new AutomaticDebitPaymentRecord();
-                    automaticDebitPaymentRecord.setItemAutomaticDebitId(record.getItemAutomaticDebitId());
-                    automaticDebitPaymentRecord.setItemCommissionId(record.getItemCommissionId());
+                    automaticDebitPaymentRecord.setItemAutomaticDebitId(item.getId());
                     automaticDebitPaymentRecord.setUniqueId(paymentRecordService.generateUniqueId());
-                    automaticDebitPaymentRecord.setOutstandingBalance(record.getOutstandingBalance());
-                    automaticDebitPaymentRecord.setDebitAmount(record.getDebitAmount());
-                    automaticDebitPaymentRecord.setPaymentDate(record.getPaymentDate());
-                    automaticDebitPaymentRecord.setPaymentType(record.getPaymentType());
-                    automaticDebitPaymentRecord.setStatus(record.getStatus());
-
+                    automaticDebitPaymentRecord.setOutstandingBalance(updatedResponse.getPendiente());
+                    automaticDebitPaymentRecord.setDebitAmount(updatedResponse.getAmount());
+                    automaticDebitPaymentRecord.setPaymentDate(updatedResponse.getCreateDate());
+                    automaticDebitPaymentRecord.setPaymentType(updatedResponse.getTransactionType());
+                    automaticDebitPaymentRecord.setStatus(updatedResponse.getStatus());
+    
                     automaticDebitPaymentRecordRepository.save(automaticDebitPaymentRecord);
-                    
-                    log.info("Procesamiento de débito automático completado.");
+                    log.info("Registro de débito automático guardado para item {}.", item.getId());
                 } catch (Exception e) {
-                    log.error("Error al procesar el débito del item {}: {}", item.getId(), e.getMessage());
+                    log.error("Error al procesar el débito del item {}: {}", item.getId(), e.getMessage(), e);
                 }
             }
         }
+        log.info("Procesamiento de débito automático completado.");
     }
+    
+    // public void processCollections(){
+    //     log.info("Iniciando procesamiento de cobros...");
+    //     List<OrderDTO> orders = this.getActiveOrdersByServiceId("LEY0053994");
+    //     for (OrderDTO order : orders) {
+    //         List<ItemCollection> items = itemCollectionService.getItemsByOrderIdAndStatus(order.getOrderId(), "PEN");
+    //         for (ItemCollection item : items) {
+    //             try {
+    //                 ResponseTransactionDTO response = paymentRecordService.processCollection(item);
+    //                 log.info("Procesamiento de cobro completado: {}", response);
+    //             } catch (Exception e) {
+    //                 log.error("Error al procesar el cobro del item {}: {}", item.getId(), e.getMessage());
+    //             }
+    //         }
+    //     }   
+    // }
 
 }

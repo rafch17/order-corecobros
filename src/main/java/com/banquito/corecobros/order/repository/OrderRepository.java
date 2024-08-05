@@ -24,4 +24,6 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
         List<Order> findByServiceIdAndAccountIdAndStartDateGreaterThanEqualAndEndDateLessThanEqual(
                         String serviceId, String accountId, LocalDate startDate, LocalDate endDate);
 
+        List<Order> findByCompanyUid(String companyUid);
+
 }
