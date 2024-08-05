@@ -134,7 +134,7 @@ public class ItemCollectionService {
     }
 
     public ResponseItemCommissionDTO sendCommissionData(ResponseItemCommissionDTO itemCommissionDTO) {
-        String apiUrl = "http://localhost:8080/api/v1/item-commissions";
+        String apiUrl = "http://localhost:8080/item-commission-microservice/api/v1/item-commissions/";
         return webClient.post()
                 .uri(apiUrl)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -164,15 +164,15 @@ public class ItemCollectionService {
                 dto.setCollectionAmount(amount);
                 dto.setStatus("PEN");
 
-                // ResponseItemCommissionDTO commissionDTO = new ResponseItemCommissionDTO();
-                // commissionDTO.setCompanyUniqueId(companyUid);
-                // commissionDTO.setOrderUniqueId(uniqueId);
-                // commissionDTO.setItemUniqueId(unique);
-                // commissionDTO.setItemType("REC");
+                ResponseItemCommissionDTO commissionDTO = new ResponseItemCommissionDTO();
+                commissionDTO.setCompanyUniqueId(companyUid);
+                commissionDTO.setOrderUniqueId(uniqueId);
+                commissionDTO.setItemUniqueId(unique);
+                commissionDTO.setItemType("REC");
 
-                // ResponseItemCommissionDTO responseDTO = this.sendCommissionData(commissionDTO);
+                ResponseItemCommissionDTO responseDTO = this.sendCommissionData(commissionDTO);
 
-                // dto.setItemCommissionId(responseDTO.getId());
+                dto.setItemCommissionId(responseDTO.getId());
                 dto.setItemCommissionId(1);
                 this.createItemCollection(dto);
 

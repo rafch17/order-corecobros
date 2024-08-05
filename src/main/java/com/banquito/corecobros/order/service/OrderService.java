@@ -69,7 +69,7 @@ public class OrderService {
         order.setServiceId("LEY0053994");
         order.setAccountId("ZGE0000866");
         order.setTotalAmount(BigDecimal.ZERO);
-        order.setCompanyUid("QYV0019768");
+        order.setCompanyUid("ICV0087338");
         String uniqueId = generateUniqueId();
 
         while (orderRepository.existsByUniqueId(uniqueId)){
@@ -229,7 +229,7 @@ public class OrderService {
         this.expireItemsAfterOrderEndDate();
     }
 
-    @Scheduled(cron = "0 * * * * ?")
+    @Scheduled(cron = "0 0 * * * ?")
     @Async
     @Transactional
     public void processAutomaticDebits() {
