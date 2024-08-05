@@ -20,7 +20,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 @CrossOrigin(origins = "*", allowedHeaders = "*", methods = { RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT })
 @RestController
-@RequestMapping("/api/v1/collections")
+@RequestMapping("/order-microservice/api/v1/collections")
 @Tag(name = "ItemCollection", description = "APIs related to Item Collections")
 public class ItemCollectionController {
     private final ItemCollectionService itemCollectionService;

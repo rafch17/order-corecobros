@@ -19,7 +19,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 @CrossOrigin(origins = "*", allowedHeaders = "*", methods = { RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT })
 @RestController
-@RequestMapping("/api/v1/automaticDebits")
+@RequestMapping("/order-microservice/api/v1/automaticDebits")
 @Tag(name = "ItemAutomaticDebit", description = "APIs related to Item Automatic Debits")
 public class ItemAutomaticDebitController {
     private final ItemAutomaticDebitService itemAutomaticDebitService;

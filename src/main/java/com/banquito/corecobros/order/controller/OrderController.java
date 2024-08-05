@@ -28,7 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 @CrossOrigin(origins = "*", allowedHeaders = "*", methods = { RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT })
 @Slf4j
 @RestController
-@RequestMapping("/api/v1/orders")
+@RequestMapping("/order-microservice/api/v1/orders")
 @Tag(name = "OrderController", description = "APIs related to Orders")
 public class OrderController {
     private final OrderService orderService;

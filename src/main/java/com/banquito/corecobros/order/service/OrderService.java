@@ -5,19 +5,18 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import org.springframework.http.MediaType;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.http.MediaType;
 
 import com.banquito.corecobros.order.dto.AccountTransactionDTO;
-import com.banquito.corecobros.order.dto.AutomaticDebitPaymentRecordDTO;
 import com.banquito.corecobros.order.dto.ItemAutomaticDebitDTO;
 import com.banquito.corecobros.order.dto.OrderDTO;
-import com.banquito.corecobros.order.dto.ResponseTransactionDTO;
 import com.banquito.corecobros.order.model.AutomaticDebitPaymentRecord;
 import com.banquito.corecobros.order.model.ItemAutomaticDebit;
 import com.banquito.corecobros.order.model.ItemCollection;
