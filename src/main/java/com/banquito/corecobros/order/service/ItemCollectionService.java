@@ -147,43 +147,47 @@ public class ItemCollectionService {
     public BigDecimal processCsvFile(MultipartFile file, Integer orderId, String companyUid, String uniqueId) throws IOException {
         BigDecimal totalAmount = BigDecimal.ZERO;
         try (InputStreamReader reader = new InputStreamReader(file.getInputStream());
-                CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT.builder().setHeader().build())) {
+             CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT.builder().setHeader().build())) {
             for (CSVRecord csvRecord : csvParser) {
                 String debtorName = csvRecord.get("debtorName");
                 String counterpart = csvRecord.get("counterpart");
-                String collectionAmount = csvRecord.get("collectionAmount");
-
-                ItemCollectionDTO dto = new ItemCollectionDTO();
-                dto.setOrderId(orderId);
-                String unique = this.generateUniqueId();
-                dto.setUniqueId(unique);
-                dto.setDebtorName(debtorName);
-                dto.setCounterpart(counterpart);
+                String collectionAmount = csvRecord.get("collectionAmount").trim();
+    
                 BigDecimal amount = new BigDecimal(collectionAmount);
-                totalAmount = totalAmount.add(amount);
-                dto.setCollectionAmount(amount);
-                dto.setStatus("PEN");
-
-                ResponseItemCommissionDTO commissionDTO = new ResponseItemCommissionDTO();
-                commissionDTO.setCompanyUniqueId(companyUid);
-                commissionDTO.setOrderUniqueId(uniqueId);
-                commissionDTO.setItemUniqueId(unique);
-                commissionDTO.setItemType("REC");
-
-                ResponseItemCommissionDTO responseDTO = this.sendCommissionData(commissionDTO);
-
-                dto.setItemCommissionId(responseDTO.getId());
-                dto.setItemCommissionId(1);
-                this.createItemCollection(dto);
-
+                if (amount.compareTo(BigDecimal.ZERO) > 0) {
+                    // Crear y configurar ItemCollectionDTO
+                    ItemCollectionDTO dto = new ItemCollectionDTO();
+                    dto.setOrderId(orderId);
+                    String unique = this.generateUniqueId();
+                    dto.setUniqueId(unique);
+                    dto.setDebtorName(debtorName);
+                    dto.setCounterpart(counterpart);
+                    dto.setCollectionAmount(amount);
+                    dto.setStatus("PEN");
+    
+                    ResponseItemCommissionDTO commissionDTO = new ResponseItemCommissionDTO();
+                    commissionDTO.setCompanyUniqueId(companyUid);
+                    commissionDTO.setOrderUniqueId(uniqueId);
+                    commissionDTO.setItemUniqueId(unique);
+                    commissionDTO.setItemType("REC");
+    
+                    ResponseItemCommissionDTO responseDTO = this.sendCommissionData(commissionDTO);
+                    log.info("Respuesta de Comisión: {}", responseDTO);
+                    dto.setItemCommissionId(responseDTO.getCommissionId());
+                    dto.setItemCommissionId(1); // Esto parece ser redundante y probablemente un error
+                    this.createItemCollection(dto);
+    
+                    totalAmount = totalAmount.add(amount);
+                }
             }
             log.info("Archivo CSV procesado con éxito.");
+            return totalAmount;
         } catch (IOException e) {
             log.error("Error procesando el archivo CSV", e);
             throw e;
         }
-        return totalAmount;
     }
+    
 
     public String generateUniqueId() {
         UniqueIdGeneration uniqueIdGenerator = new UniqueIdGeneration();

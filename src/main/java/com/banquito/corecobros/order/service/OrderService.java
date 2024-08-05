@@ -69,7 +69,7 @@ public class OrderService {
         order.setServiceId("LEY0053994");
         order.setAccountId("ZGE0000866");
         order.setTotalAmount(BigDecimal.ZERO);
-        order.setCompanyUid("ICV0087338");
+        order.setCompanyUid("OJU0037961");
         String uniqueId = generateUniqueId();
 
         while (orderRepository.existsByUniqueId(uniqueId)){
@@ -81,8 +81,14 @@ public class OrderService {
 
         try {
             BigDecimal totalAmout = itemCollectionService.processCsvFile(file, savedOrder.getOrderId(), savedOrder.getCompanyUid(), savedOrder.getUniqueId());
-            savedOrder.setTotalAmount(totalAmout);
-            this.orderRepository.save(savedOrder);
+            if(totalAmout.compareTo(BigDecimal.ZERO) > 0){
+                savedOrder.setTotalAmount(totalAmout);
+                this.orderRepository.save(savedOrder);
+                log.info("Orden actualizada con totalAmount:" + totalAmout);
+            }else{
+                this.orderRepository.delete(savedOrder);
+            }
+
         } catch (Exception e) {
             log.info("Error al procesar el archivo CSV", e);
             throw new RuntimeException("Error al procesar el archivo CSV");
