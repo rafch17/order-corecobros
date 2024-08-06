@@ -76,7 +76,7 @@ public class ItemAutomaticDebitService {
 
                 ItemAutomaticDebitDTO dto = new ItemAutomaticDebitDTO();
                 dto.setOrderId(orderId);
-                dto.setItemCommissionId(1);
+                dto.setItemCommissionId(6);
                 dto.setUniqueId(this.generateUniqueId());
                 dto.setIdentification(identification);
                 dto.setDebtorName(debtorName);

@@ -116,7 +116,7 @@ public class ItemCollectionService {
     }
 
     public List<ItemCollectionDTO> findActiveItemCollections() {
-        List<ItemCollection> itemCollections = this.itemCollectionRepository.findByStatus("ACT");
+        List<ItemCollection> itemCollections = this.itemCollectionRepository.findByStatus("APR");
         return itemCollections.stream().map(this.itemCollectionMapper::toDTO).collect(Collectors.toList());
     }
 
@@ -134,7 +134,7 @@ public class ItemCollectionService {
     }
 
     public ResponseItemCommissionDTO sendCommissionData(ResponseItemCommissionDTO itemCommissionDTO) {
-        String apiUrl = "http://localhost:8080/item-commission-microservice/api/v1/item-commissions/";
+        String apiUrl = "http://localhost:8080/commission-microservice/api/v1/item-commissions";
         return webClient.post()
                 .uri(apiUrl)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -173,8 +173,8 @@ public class ItemCollectionService {
     
                     ResponseItemCommissionDTO responseDTO = this.sendCommissionData(commissionDTO);
                     log.info("Respuesta de Comisión: {}", responseDTO);
-                    dto.setItemCommissionId(responseDTO.getCommissionId());
-                    dto.setItemCommissionId(1); // Esto parece ser redundante y probablemente un error
+                    // dto.setItemCommissionId(responseDTO.getCommissionId());
+                    dto.setItemCommissionId(9); // Esto parece ser redundante y probablemente un error
                     this.createItemCollection(dto);
     
                     totalAmount = totalAmount.add(amount);

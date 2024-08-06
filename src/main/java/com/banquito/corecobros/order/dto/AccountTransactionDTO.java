@@ -15,9 +15,10 @@ public class AccountTransactionDTO {
     private String creditorAccount;
     private String transactionType;
     private String reference;
-    private BigDecimal commission;
+    private BigDecimal comission;
     private String parentTransactionKey;
 
+    //RESPONSE
     private LocalDateTime createDate;
     private String status;
     private BigDecimal pendiente;
