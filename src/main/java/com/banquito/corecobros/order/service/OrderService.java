@@ -300,7 +300,7 @@ public class OrderService {
                 .amount(item.getDebitAmount())
                 .creditorAccount("2296956779") //Falta
                 .debitorAccount(item.getDebitAccount())
-                .comission(BigDecimal.valueOf(1.00))
+                .comission(BigDecimal.valueOf(0.40))
                 .createDate(LocalDateTime.now())
                 .parentTransactionKey(null)
                 .status("APR")
