@@ -55,8 +55,8 @@ public class ItemCollectionController {
     }
 
     @Operation(summary = "Get an item collection by ID", description = "Fetches the details of an item collection by its ID.")
-    @GetMapping("/{id}")
-    public ResponseEntity<ItemCollectionDTO> getItemCollectionById(Integer id) {
+    @GetMapping("/id/{collectionId}")
+    public ResponseEntity<ItemCollectionDTO> getItemCollectionById(@PathVariable("collectionId") Integer id) {
         try {
             return ResponseEntity.ok(this.itemCollectionService.obtainItemCollectionById(id));
         } catch (RuntimeException rte) {
@@ -65,8 +65,8 @@ public class ItemCollectionController {
     }
 
     @Operation(summary = "Get item collections by status", description = "Fetches a list of item collections based on their status.")
-    @GetMapping("/item-collections/{status}")
-    public ResponseEntity<List<ItemCollectionDTO>> getItemCollectionsByStatus(String status) {
+    @GetMapping("/item-collections/status/{collectionStatus}")
+    public ResponseEntity<List<ItemCollectionDTO>> getItemCollectionsByStatus(@PathVariable("collectionStatus") String status) {
         return ResponseEntity.ok(this.itemCollectionService.obtainItemCollectionsByStatus(status));
     }
 

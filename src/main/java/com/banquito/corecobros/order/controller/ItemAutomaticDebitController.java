@@ -46,8 +46,8 @@ public class ItemAutomaticDebitController {
     }
 
     @Operation(summary = "Get an item automatic debit by ID", description = "Fetches the details of an item automatic debit by its ID.")
-    @GetMapping("/{id}")
-    public ResponseEntity<ItemAutomaticDebitDTO> getItemAutomaticDebitById(Integer id) {
+    @GetMapping("/id/{debitId}")
+    public ResponseEntity<ItemAutomaticDebitDTO> getItemAutomaticDebitById(@PathVariable("debitId") Integer id) {
         try {
             return ResponseEntity.ok(this.itemAutomaticDebitService.obtainItemAutomaticDebitById(id));
         } catch (RuntimeException rte) {

@@ -72,7 +72,7 @@ public class ItemAutomaticDebitService {
     }
 
     public ResponseItemCommissionDTO sendCommissionData(ResponseItemCommissionDTO itemCommissionDTO) {
-        String apiUrl = "https://m4b60phktl.execute-api.us-east-1.amazonaws.com/banquito/commission-microservice/api/v1/item-commissions";
+        String apiUrl = "http://core-cobros-alb-538320160.us-east-1.elb.amazonaws.com/commission-microservice/api/v1/item-commissions";
         return webClient.post()
                 .uri(apiUrl)
                 .contentType(MediaType.APPLICATION_JSON)

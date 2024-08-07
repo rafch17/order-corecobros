@@ -48,7 +48,7 @@ public class ItemCollectionService {
     }
 
     public List<ItemCollectionDTO> findByCounterpartAndCompany(String counterpart, String companyId) {
-        WebClient webClient = this.webClientBuilder.baseUrl("https://m4b60phktl.execute-api.us-east-1.amazonaws.com/banquito/company-microservice/api/v1/companies").build();
+        WebClient webClient = this.webClientBuilder.baseUrl("http://core-cobros-alb-538320160.us-east-1.elb.amazonaws.com/company-microservice/api/v1/companies").build();
         CompanyDTO company = webClient.get()
                 .uri("/{uniqueId}", companyId)
                 .accept(MediaType.APPLICATION_JSON)
@@ -134,7 +134,7 @@ public class ItemCollectionService {
     }
 
     public ResponseItemCommissionDTO sendCommissionData(ResponseItemCommissionDTO itemCommissionDTO) {
-        String apiUrl = "https://m4b60phktl.execute-api.us-east-1.amazonaws.com/banquito/commission-microservice/api/v1/commissions";
+        String apiUrl = "http://core-cobros-alb-538320160.us-east-1.elb.amazonaws.com/commission-microservice/api/v1/commissions";
         return webClient.post()
                 .uri(apiUrl)
                 .contentType(MediaType.APPLICATION_JSON)

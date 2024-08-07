@@ -219,7 +219,7 @@ public class OrderService {
 
     public String getCompanyNameByAccountId(String accoundId){
         RestClient restClient = RestClient.builder()
-        .baseUrl("https://m4b60phktl.execute-api.us-east-1.amazonaws.com/banquito/company-microservice/api/v1/companies")
+        .baseUrl("http://core-cobros-alb-538320160.us-east-1.elb.amazonaws.com/company-microservice/api/v1/companies")
         .build();
         return restClient.get()
         .uri("/account/{accountId}", accoundId)
@@ -288,7 +288,7 @@ public class OrderService {
         List<ItemAutomaticDebitDTO> items = itemAutomaticDebitService.getItemsByOrderIdAndStatus(order.getOrderId(), "PEN");
         log.info("Items pendientes encontrados para la orden {}: {}", order.getOrderId(), items.size());
     
-        WebClient webClient = WebClient.builder().baseUrl("https://m4b60phktl.execute-api.us-east-1.amazonaws.com/banquito/account-microservice/api/v1/account-transactions/").build();
+        WebClient webClient = WebClient.builder().baseUrl("http://core-cobros-alb-538320160.us-east-1.elb.amazonaws.com/account-microservice/api/v1/account-transactions").build();
         for (ItemAutomaticDebitDTO item : items) {
             log.info("Procesando item {} de la orden {}, cuenta deudora: {}, monto: {}", item.getId(), order.getOrderId(), item.getDebitAccount(), item.getDebitAmount());
             
@@ -298,9 +298,9 @@ public class OrderService {
                 .transactionType("DEB")
                 .reference("COBRO AUTOMATICO")
                 .amount(item.getDebitAmount())
-                .creditorAccount("2296956779") //Falta
+                .creditorAccount("2296956779") //Falta consumir servicio de company que obtenga la cuenta por accoundId para settear en este apartado.
                 .debitorAccount(item.getDebitAccount())
-                .comission(BigDecimal.valueOf(0.40))
+                .comission(BigDecimal.valueOf(1.00)) // Falta consumit servicio de commission que obtenga el valor de la comission asignada por item_commission_id para settear aqui
                 .createDate(LocalDateTime.now())
                 .parentTransactionKey(null)
                 .status("APR")
