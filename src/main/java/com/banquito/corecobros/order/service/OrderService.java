@@ -309,7 +309,7 @@ public class OrderService {
             try {
                 log.info("Enviando solicitud de débito automático para item {}...", item.getId());
                 log.info("debit account: {}", item.getDebitAccount());
-                String uri = item.getDebitAccount();
+                // String uri = item.getDebitAccount();
                 Mono<AccountTransactionDTO> responseMono = webClient.post()
                     .uri("")
                     .contentType(MediaType.APPLICATION_JSON)

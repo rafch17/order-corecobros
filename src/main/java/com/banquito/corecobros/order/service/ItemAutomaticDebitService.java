@@ -16,8 +16,12 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import com.banquito.corecobros.order.dto.ItemAutomaticDebitDTO;
 import com.banquito.corecobros.order.dto.ResponseItemCommissionDTO;
+import com.banquito.corecobros.order.model.AutomaticDebitPaymentRecord;
 import com.banquito.corecobros.order.model.ItemAutomaticDebit;
+import com.banquito.corecobros.order.model.Order;
+import com.banquito.corecobros.order.repository.AutomaticDebitPaymentRecordRepository;
 import com.banquito.corecobros.order.repository.ItemAutomaticDebitRepository;
+import com.banquito.corecobros.order.repository.OrderRepository;
 import com.banquito.corecobros.order.util.mapper.ItemAutomaticDebitMapper;
 import com.banquito.corecobros.order.util.uniqueId.UniqueIdGeneration;
 
@@ -26,16 +30,21 @@ import reactor.core.publisher.Mono;
 @Slf4j
 @Service
 public class ItemAutomaticDebitService {
+    
     private final ItemAutomaticDebitRepository itemAutomaticDebitRepository;
     private final ItemAutomaticDebitMapper mapper;
     private final WebClient.Builder webClientBuilder;
     private final WebClient webClient;
+    private final AutomaticDebitPaymentRecordRepository automaticDebitPaymentRecordRepository;
+    private final OrderRepository orderRepository;
 
-    public ItemAutomaticDebitService(ItemAutomaticDebitRepository itemAutomaticDebitRepository, ItemAutomaticDebitMapper mapper, WebClient.Builder webClientBuilder) {
+    public ItemAutomaticDebitService(ItemAutomaticDebitRepository itemAutomaticDebitRepository, ItemAutomaticDebitMapper mapper, WebClient.Builder webClientBuilder, AutomaticDebitPaymentRecordRepository automaticDebitPaymentRecordRepository, OrderRepository orderRepository) {
         this.itemAutomaticDebitRepository = itemAutomaticDebitRepository;
         this.mapper = mapper;
         this.webClientBuilder = webClientBuilder;
         this.webClient = this.webClientBuilder.build();
+        this.automaticDebitPaymentRecordRepository = automaticDebitPaymentRecordRepository;
+        this.orderRepository = orderRepository;
     }
 
     public void createItemAutomaticDebit(ItemAutomaticDebitDTO dto) {
@@ -162,5 +171,16 @@ public class ItemAutomaticDebitService {
         itemAutomaticDebitRepository.save(item);
     }
     
-    
+    public List<AutomaticDebitPaymentRecord> findRecordsByUniqueId(String uniqueId) {
+        Order order = orderRepository.findByUniqueId(uniqueId);
+        if (order == null) {
+            throw new RuntimeException("Order not found with uniqueId: " + uniqueId);
+        }
+        
+        List<ItemAutomaticDebit> items = itemAutomaticDebitRepository.findByOrder(order);
+        
+        return items.stream()
+                    .flatMap(item -> automaticDebitPaymentRecordRepository.findByItemAutomaticDebit(item).stream())
+                    .collect(Collectors.toList());
+    }
 }

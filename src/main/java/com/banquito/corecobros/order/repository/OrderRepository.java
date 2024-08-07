@@ -29,5 +29,6 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
         List<Order> findByCompanyUid(String companyUid);
 
         List<Order> findByStatus(String status);
-
+        
+        Order findByOrderIdAndUniqueId(Integer orderId, String uniqueId);
 }

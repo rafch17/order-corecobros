@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.banquito.corecobros.order.dto.ItemAutomaticDebitDTO;
+import com.banquito.corecobros.order.model.AutomaticDebitPaymentRecord;
 import com.banquito.corecobros.order.service.ItemAutomaticDebitService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -60,5 +61,12 @@ public class ItemAutomaticDebitController {
     public ResponseEntity<List<ItemAutomaticDebitDTO>> getItemAutomaticDebitsByOrderId(@PathVariable String orderId) {
         List<ItemAutomaticDebitDTO> items = itemAutomaticDebitService.getItemAutomaticDebitsByOrderId(orderId);
         return ResponseEntity.ok(items);
+    }
+
+    @Operation(summary = "Get item automatic debit by order Unique ID", description = "Fetches a list of item automatic debits associated with a specific order Unique order ID.")
+    @GetMapping("/item-automatic-debits/order/{uniqueId}")
+    public ResponseEntity<List<AutomaticDebitPaymentRecord>> getPaymentRecordsByUniqueId(@PathVariable String uniqueId) {
+        List<AutomaticDebitPaymentRecord> records = itemAutomaticDebitService.findRecordsByUniqueId(uniqueId);
+        return ResponseEntity.ok(records);
     }
 }

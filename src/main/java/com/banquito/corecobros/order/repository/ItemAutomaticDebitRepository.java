@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import com.banquito.corecobros.order.model.ItemAutomaticDebit;
+import com.banquito.corecobros.order.model.Order;
 
 @Repository
 public interface ItemAutomaticDebitRepository extends JpaRepository<ItemAutomaticDebit, Integer> {
@@ -20,4 +21,6 @@ public interface ItemAutomaticDebitRepository extends JpaRepository<ItemAutomati
     List<ItemAutomaticDebit> findByOrderIdAndStatus(Integer orderId, String status);
 
     boolean existsByUniqueId(String uniqueId);
+
+    List<ItemAutomaticDebit> findByOrder(Order order);
 }
