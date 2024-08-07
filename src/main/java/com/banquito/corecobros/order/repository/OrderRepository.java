@@ -15,13 +15,19 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
         boolean existsByUniqueId(String uniqueId);
 
         List<Order> findByServiceIdAndStatusAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
-                        Integer serviceId, String status, LocalDate currentDate1, LocalDate currentDate2);
+                        String serviceId, String status, LocalDate currentDate1, LocalDate currentDate2);
 
-        List<Order> findByAccountId(Integer accountId);
+        List<Order> findByAccountId(String accountId);
 
         List<Order> findByEndDateBeforeAndStatus(LocalDate endDate, String status);
 
         List<Order> findByServiceIdAndAccountIdAndStartDateGreaterThanEqualAndEndDateLessThanEqual(
-                        Integer serviceId, Integer accountId, LocalDate startDate, LocalDate endDate);
+                        String serviceId, String accountId, LocalDate startDate, LocalDate endDate);
+
+        List<Order> findByServiceIdAndStatus(String serviceId, String status);
+
+        List<Order> findByCompanyUid(String companyUid);
+
+        List<Order> findByStatus(String status);
 
 }

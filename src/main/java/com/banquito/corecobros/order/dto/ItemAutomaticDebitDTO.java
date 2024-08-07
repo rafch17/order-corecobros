@@ -5,12 +5,14 @@ import java.math.BigDecimal;
 public class ItemAutomaticDebitDTO {
     private Integer id;
     private Integer orderId;
+    private Integer itemCommissionId;
+    private String uniqueId;
     private String identification;
     private String debtorName;
     private String debitAccount;
     private BigDecimal debitAmount;
     private String status;
-
+    
     public Integer getId() {
         return id;
     }
@@ -22,6 +24,18 @@ public class ItemAutomaticDebitDTO {
     }
     public void setOrderId(Integer orderId) {
         this.orderId = orderId;
+    }
+    public Integer getItemCommissionId() {
+        return itemCommissionId;
+    }
+    public void setItemCommissionId(Integer itemCommissionId) {
+        this.itemCommissionId = itemCommissionId;
+    }
+    public String getUniqueId() {
+        return uniqueId;
+    }
+    public void setUniqueId(String uniqueId) {
+        this.uniqueId = uniqueId;
     }
     public String getIdentification() {
         return identification;

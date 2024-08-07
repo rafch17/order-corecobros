@@ -9,7 +9,6 @@ import com.banquito.corecobros.order.model.ItemCollection;
 
 @Repository
 public interface ItemCollectionRepository extends JpaRepository<ItemCollection, Integer> {
-
     List<ItemCollection> findByCounterpartAndStatus(String counterpart, String status);
 
     List<ItemCollection> findByStatus(String status);
@@ -21,4 +20,6 @@ public interface ItemCollectionRepository extends JpaRepository<ItemCollection, 
     List<ItemCollection> findByOrderIdIn(List<Integer> orderIds);
 
     List<ItemCollection> findByCounterpartAndUniqueId(String counterpart, String uniqueId);
+
+    boolean existsByUniqueId(String uniqueId);
 }

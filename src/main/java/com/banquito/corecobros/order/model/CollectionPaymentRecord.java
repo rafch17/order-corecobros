@@ -33,6 +33,8 @@ public class CollectionPaymentRecord {
     private Integer itemCollectionId;
     @Column(name = "ITEM_COMMISSION_ID")
     private Integer itemCommissionId;
+    @Column(name = "UNIQUE_ID", length = 100)
+    private String uniqueId;
     @Column(name = "COLLECTION_AMOUNT", precision = 17, scale = 2)
     private BigDecimal collectionAmount;
     @Column(name = "PAYMENT_TYPE", length = 3)

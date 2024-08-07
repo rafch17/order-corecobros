@@ -21,13 +21,15 @@ import org.springframework.web.multipart.MultipartFile;
 import com.banquito.corecobros.order.dto.OrderDTO;
 import com.banquito.corecobros.order.service.OrderService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 
-@CrossOrigin(origins = "*", allowedHeaders = "*", methods = { RequestMethod.GET, RequestMethod.POST,
-    RequestMethod.PUT })
+@CrossOrigin(origins = "*", allowedHeaders = "*", methods = { RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT })
 @Slf4j
 @RestController
-@RequestMapping("/api/v1/orders")
+@RequestMapping("/order-microservice/api/v1/orders")
+@Tag(name = "OrderController", description = "APIs related to Orders")
 public class OrderController {
     private final OrderService orderService;
 
@@ -35,12 +37,13 @@ public class OrderController {
         this.orderService = orderService;
     }
 
+    @Operation(summary = "Get all orders", description = "Fetches a list of all orders.")
     @GetMapping
     public ResponseEntity<List<OrderDTO>> getAllOrders() {
         return ResponseEntity.ok(this.orderService.obtainAllOrders());
     }
 
-
+    @Operation(summary = "Create a new automatic debit order", description = "Creates a new automatic debit order with the provided file and order details.")
     @PostMapping(value = "/automatic-debit", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Void> createOrderAD(
             @RequestPart("file") MultipartFile file,
@@ -53,6 +56,7 @@ public class OrderController {
         }
     }
 
+    @Operation(summary = "Create a new collection order", description = "Creates a new collection order with the provided file and order details.")
     @PostMapping(value = "/collection", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Void> createOrderCollection(
             @RequestPart("file") MultipartFile file,
@@ -65,6 +69,7 @@ public class OrderController {
         }
     }
 
+    @Operation(summary = "Get an order by ID", description = "Fetches the details of an order by its ID.")
     @GetMapping("/{id}")
     public ResponseEntity<OrderDTO> getOrderById(@PathVariable Integer id) {
         try {
@@ -74,14 +79,16 @@ public class OrderController {
         }
     }
 
+    @Operation(summary = "Expire orders", description = "Changes the status of all orders to expired.")
     @PutMapping("/expire")
     public ResponseEntity<Void> expireOrders() {
         orderService.expireOrders();
         return ResponseEntity.ok().build();
     }
 
-    @PutMapping("/{uniqueId}/status")
-    public ResponseEntity<OrderDTO> updateOrderStatus(@PathVariable String uniqueId, @RequestParam String status) {
+    @Operation(summary = "Update order status", description = "Updates the status of an order based on its unique ID.")
+    @PutMapping("/status")
+    public ResponseEntity<OrderDTO> updateOrderStatus(@RequestParam String uniqueId, @RequestParam String status) {
         try {
             OrderDTO updatedOrder = orderService.updateOrderStatus(uniqueId, status);
             return ResponseEntity.ok(updatedOrder);
@@ -90,19 +97,41 @@ public class OrderController {
         }
     }
 
+    @Operation(summary = "Search orders by criteria", description = "Fetches orders based on service ID, account ID, and a date range.")
     @GetMapping("/search")
     public ResponseEntity<List<OrderDTO>> getOrdersByCriteria(
-            @RequestParam Integer serviceId,
-            @RequestParam Integer accountId,
+            @RequestParam String serviceId,
+            @RequestParam String accountId,
             @RequestParam LocalDate startDate,
             @RequestParam LocalDate endDate) {
-        List<OrderDTO> orders = orderService.getOrdersByServiceIdAndAccountIdAndDateRange(
+        try {
+            List<OrderDTO> orders = orderService.getOrdersByServiceIdAndAccountIdAndDateRange(
                 serviceId, accountId, startDate, endDate);
-        return new ResponseEntity<>(orders, HttpStatus.OK);
+            return ResponseEntity.ok(orders);
+        } catch (RuntimeException rte) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 
+    @Operation(summary = "Get orders by service ID", description = "Fetches all active orders for a specific service ID.")
     @GetMapping("/service/{serviceId}")
-    public List<OrderDTO> getOrdersByServiceId(@PathVariable Integer serviceId) {
+    public List<OrderDTO> getOrdersByServiceId(@PathVariable String serviceId) {
         return orderService.getActiveOrdersByServiceId(serviceId);
+    }
+
+    @GetMapping("/order-status/{status}")
+    public ResponseEntity<List<OrderDTO>> getOrdersByStatus(@PathVariable String status) {
+        List<OrderDTO> orders = orderService.getOrdersByStatus(status);
+        if (orders.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        } else {
+            return ResponseEntity.ok(orders);
+        }
+    }
+
+    @GetMapping("/active/{serviceId}")
+    public ResponseEntity<List<OrderDTO>> getActiveOrdersByServiceId(@PathVariable String serviceId) {
+        List<OrderDTO> activeOrders = orderService.getActiveOrdersByServiceId(serviceId);
+        return ResponseEntity.ok(activeOrders);
     }
 }

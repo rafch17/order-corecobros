@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
 public class AutomaticDebitPaymentRecordDTO {
     private Integer id;
     private Integer itemAutomaticDebitId;
-    private Integer itemCommissionId;
+    private String uniqueId;
     private BigDecimal outstandingBalance;
     private String paymentType;
     private BigDecimal debitAmount;
@@ -25,11 +25,11 @@ public class AutomaticDebitPaymentRecordDTO {
     public void setItemAutomaticDebitId(Integer itemAutomaticDebitId) {
         this.itemAutomaticDebitId = itemAutomaticDebitId;
     }
-    public Integer getItemCommissionId() {
-        return itemCommissionId;
+    public String getUniqueId() {
+        return uniqueId;
     }
-    public void setItemCommissionId(Integer itemCommissionId) {
-        this.itemCommissionId = itemCommissionId;
+    public void setUniqueId(String uniqueId) {
+        this.uniqueId = uniqueId;
     }
     public BigDecimal getOutstandingBalance() {
         return outstandingBalance;

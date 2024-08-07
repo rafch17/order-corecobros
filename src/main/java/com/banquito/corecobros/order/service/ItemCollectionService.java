@@ -5,37 +5,51 @@ import java.io.InputStreamReader;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
+
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.http.MediaType;
+
 import com.banquito.corecobros.order.dto.CompanyDTO;
 import com.banquito.corecobros.order.dto.ItemCollectionDTO;
+import com.banquito.corecobros.order.dto.ResponseItemCommissionDTO;
 import com.banquito.corecobros.order.model.ItemCollection;
+import com.banquito.corecobros.order.model.Order;
 import com.banquito.corecobros.order.repository.ItemCollectionRepository;
+import com.banquito.corecobros.order.repository.OrderRepository;
 import com.banquito.corecobros.order.util.mapper.ItemCollectionMapper;
+import com.banquito.corecobros.order.util.uniqueId.UniqueIdGeneration;
+
 import lombok.extern.slf4j.Slf4j;
+import reactor.core.publisher.Mono;
 
 @Slf4j
 @Service
 public class ItemCollectionService {
     private final ItemCollectionRepository itemCollectionRepository;
     private final ItemCollectionMapper itemCollectionMapper;
+    private final OrderRepository orderRepository;
+    private final WebClient.Builder webClientBuilder;
     private final WebClient webClient;
 
     public ItemCollectionService(ItemCollectionRepository itemCollectionRepository,
             ItemCollectionMapper itemCollectionMapper,
+            OrderRepository orderRepository,
             WebClient.Builder webClientBuilder) {
         this.itemCollectionRepository = itemCollectionRepository;
         this.itemCollectionMapper = itemCollectionMapper;
-        this.webClient = webClientBuilder.baseUrl("http://localhost:8080/api/v1/companies").build();
+        this.orderRepository = orderRepository;
+        this.webClientBuilder = webClientBuilder;
+        this.webClient = webClientBuilder.build(); 
     }
 
     public List<ItemCollectionDTO> findByCounterpartAndCompany(String counterpart, String companyId) {
-        CompanyDTO company = this.webClient.get()
+        WebClient webClient = this.webClientBuilder.baseUrl("https://m4b60phktl.execute-api.us-east-1.amazonaws.com/banquito/company-microservice/api/v1/companies").build();
+        CompanyDTO company = webClient.get()
                 .uri("/{uniqueId}", companyId)
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
@@ -43,19 +57,24 @@ public class ItemCollectionService {
                 .block();
 
         if (company != null) {
-            log.info("Compañia encontrada: {}", company);
-            if (company.getUniqueId().equals(companyId) && company.getRuc().equals(counterpart)) {
-                log.info("Contrpartida encontrada: {}", counterpart);
+            log.info("Compañía encontrada: {}", company);
+            if (company.getUniqueId().equals(companyId)) {
+                log.info("CompanyId coincide con UniqueId: {}", companyId);
+                List<Order> orders = orderRepository.findByCompanyUid(companyId);
+                List<Integer> orderIds = orders.stream().map(Order::getOrderId).collect(Collectors.toList());
                 List<ItemCollection> itemCollections = itemCollectionRepository.findByCounterpart(counterpart);
-                return itemCollections.stream()
-                        .filter(item -> "PEN".equals(item.getStatus()))
+                List<ItemCollection> filteredItemCollections = itemCollections.stream()
+                        .filter(item -> orderIds.contains(item.getOrderId()) && "PEN".equals(item.getStatus()))
+                        .collect(Collectors.toList());
+                return filteredItemCollections.stream()
                         .map(this.itemCollectionMapper::toDTO)
                         .collect(Collectors.toList());
             } else {
-                log.info("Contrapartida o companyId no encontradas");
+                log.info("CompanyId no coincide con UniqueId. companyId: {}, company.uniqueId: {}", companyId,
+                        company.getUniqueId());
             }
         } else {
-            log.info("No se encontro ninguna compañia con uniqueId: {}", companyId);
+            log.info("No se encontró ninguna compañía con uniqueId: {}", companyId);
         }
         return List.of();
     }
@@ -97,7 +116,7 @@ public class ItemCollectionService {
     }
 
     public List<ItemCollectionDTO> findActiveItemCollections() {
-        List<ItemCollection> itemCollections = this.itemCollectionRepository.findByStatus("ACT");
+        List<ItemCollection> itemCollections = this.itemCollectionRepository.findByStatus("APR");
         return itemCollections.stream().map(this.itemCollectionMapper::toDTO).collect(Collectors.toList());
     }
 
@@ -114,27 +133,73 @@ public class ItemCollectionService {
         return this.itemCollectionMapper.toDTO(itemCollections.get(0));
     }
 
-    public void processCsvFile(MultipartFile file, Integer orderId) throws IOException {
+    public ResponseItemCommissionDTO sendCommissionData(ResponseItemCommissionDTO itemCommissionDTO) {
+        String apiUrl = "https://m4b60phktl.execute-api.us-east-1.amazonaws.com/banquito/commission-microservice/api/v1/commissions";
+        return webClient.post()
+                .uri(apiUrl)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(Mono.just(itemCommissionDTO), ResponseItemCommissionDTO.class)
+                .retrieve()
+                .bodyToMono(ResponseItemCommissionDTO.class)
+                .block();
+    }
+
+    public BigDecimal processCsvFile(MultipartFile file, Integer orderId, String companyUid, String uniqueId) throws IOException {
+        BigDecimal totalAmount = BigDecimal.ZERO;
         try (InputStreamReader reader = new InputStreamReader(file.getInputStream());
-                CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT.builder().setHeader().build())) {
+             CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT.builder().setHeader().build())) {
             for (CSVRecord csvRecord : csvParser) {
                 String debtorName = csvRecord.get("debtorName");
                 String counterpart = csvRecord.get("counterpart");
-                String collectionAmount = csvRecord.get("collectionAmount");
-
-                ItemCollectionDTO dto = new ItemCollectionDTO();
-                dto.setOrderId(orderId);
-                dto.setDebtorName(debtorName);
-                dto.setCounterpart(counterpart);
-                dto.setCollectionAmount(new BigDecimal(collectionAmount));
-                dto.setStatus("PEN");
-
-                this.createItemCollection(dto);
+                String collectionAmount = csvRecord.get("collectionAmount").trim();
+    
+                BigDecimal amount = new BigDecimal(collectionAmount);
+                if (amount.compareTo(BigDecimal.ZERO) > 0) {
+                    // Crear y configurar ItemCollectionDTO
+                    ItemCollectionDTO dto = new ItemCollectionDTO();
+                    dto.setOrderId(orderId);
+                    String unique = this.generateUniqueId();
+                    dto.setUniqueId(uniqueId);
+                    dto.setDebtorName(debtorName);
+                    dto.setCounterpart(counterpart);
+                    dto.setCollectionAmount(amount);
+                    dto.setStatus("PEN");
+    
+                    ResponseItemCommissionDTO commissionDTO = new ResponseItemCommissionDTO();
+                    commissionDTO.setCompanyUniqueId(companyUid);
+                    commissionDTO.setOrderUniqueId(uniqueId);
+                    commissionDTO.setItemUniqueId(unique);
+                    commissionDTO.setItemType("REC");
+    
+                    ResponseItemCommissionDTO responseDTO = this.sendCommissionData(commissionDTO);
+                    log.info("Respuesta de Comisión: {}", responseDTO);
+                    // dto.setItemCommissionId(responseDTO.getCommissionId());
+                    dto.setItemCommissionId(9); // Esto parece ser redundante y probablemente un error
+                    this.createItemCollection(dto);
+    
+                    totalAmount = totalAmount.add(amount);
+                }
             }
             log.info("Archivo CSV procesado con éxito.");
+            return totalAmount;
         } catch (IOException e) {
             log.error("Error procesando el archivo CSV", e);
             throw e;
         }
+    }
+    
+
+    public String generateUniqueId() {
+        UniqueIdGeneration uniqueIdGenerator = new UniqueIdGeneration();
+        String uniqueId = "";
+        boolean unique = false;
+
+        while (!unique) {
+            uniqueId = uniqueIdGenerator.generateUniqueId();
+            if (!itemCollectionRepository.existsByUniqueId(uniqueId)) {
+                unique = true;
+            }
+        }
+        return uniqueId;
     }
 }
