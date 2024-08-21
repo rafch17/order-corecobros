@@ -7,12 +7,16 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.banquito.corecobros.order.dto.CollectionPaymentRecordDTO;
 import com.banquito.corecobros.order.dto.ItemCollectionDTO;
+import com.banquito.corecobros.order.dto.OrderDTO;
+import com.banquito.corecobros.order.model.CollectionPaymentRecord;
 import com.banquito.corecobros.order.service.ItemCollectionService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -56,7 +60,7 @@ public class ItemCollectionController {
 
     @Operation(summary = "Get an item collection by ID", description = "Fetches the details of an item collection by its ID.")
     @GetMapping("/{id}")
-    public ResponseEntity<ItemCollectionDTO> getItemCollectionById(Integer id) {
+    public ResponseEntity<ItemCollectionDTO> getItemCollectionById(@PathVariable Integer id) {
         try {
             return ResponseEntity.ok(this.itemCollectionService.obtainItemCollectionById(id));
         } catch (RuntimeException rte) {
@@ -82,5 +86,16 @@ public class ItemCollectionController {
     public ResponseEntity<List<ItemCollectionDTO>> getItemCollectionsByOrderId(@PathVariable Integer orderId) {
         List<ItemCollectionDTO> items = itemCollectionService.getItemCollectionsByOrderId(orderId);
         return ResponseEntity.ok(items);
+    }
+
+    @Operation(summary = "Edit a item collection state", description = "Changes the state of an item collection")
+    @PutMapping("/{id}/{codeInternal}")
+    public ResponseEntity<CollectionPaymentRecordDTO> payItemCollection(@PathVariable Integer id, @PathVariable String codeInternal) {
+        try {
+            
+            return ResponseEntity.ok(this.itemCollectionService.processPayment(id,codeInternal));
+        } catch (RuntimeException rte) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 }

@@ -3,6 +3,7 @@ package com.banquito.corecobros.order.service;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -10,20 +11,32 @@ import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.springframework.http.MediaType;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import com.banquito.corecobros.order.dto.AccountTransactionDTO;
+import com.banquito.corecobros.order.dto.AccountTransactionPaymentDTO;
+import com.banquito.corecobros.order.dto.CollectionPaymentRecordDTO;
 import com.banquito.corecobros.order.dto.CompanyDTO;
+import com.banquito.corecobros.order.dto.ItemAutomaticDebitDTO;
 import com.banquito.corecobros.order.dto.ItemCollectionDTO;
+import com.banquito.corecobros.order.dto.OrderDTO;
 import com.banquito.corecobros.order.dto.ResponseItemCommissionDTO;
+import com.banquito.corecobros.order.model.AutomaticDebitPaymentRecord;
+import com.banquito.corecobros.order.model.CollectionPaymentRecord;
 import com.banquito.corecobros.order.model.ItemCollection;
 import com.banquito.corecobros.order.model.Order;
+import com.banquito.corecobros.order.repository.CollectionPaymentRecordRepository;
 import com.banquito.corecobros.order.repository.ItemCollectionRepository;
 import com.banquito.corecobros.order.repository.OrderRepository;
+import com.banquito.corecobros.order.util.mapper.CollectionPaymentRecordMapper;
 import com.banquito.corecobros.order.util.mapper.ItemCollectionMapper;
 import com.banquito.corecobros.order.util.uniqueId.UniqueIdGeneration;
 
+import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 
@@ -32,6 +45,8 @@ import reactor.core.publisher.Mono;
 public class ItemCollectionService {
     private final ItemCollectionRepository itemCollectionRepository;
     private final ItemCollectionMapper itemCollectionMapper;
+    private final CollectionPaymentRecordMapper collectMapper;
+    private final CollectionPaymentRecordRepository collectionPaymentRecordRepo;
     private final OrderRepository orderRepository;
     private final WebClient.Builder webClientBuilder;
     private final WebClient webClient;
@@ -39,16 +54,18 @@ public class ItemCollectionService {
     public ItemCollectionService(ItemCollectionRepository itemCollectionRepository,
             ItemCollectionMapper itemCollectionMapper,
             OrderRepository orderRepository,
-            WebClient.Builder webClientBuilder) {
+            WebClient.Builder webClientBuilder, CollectionPaymentRecordRepository collectionPaymentRecordRepo, CollectionPaymentRecordMapper collectMapper) {
         this.itemCollectionRepository = itemCollectionRepository;
         this.itemCollectionMapper = itemCollectionMapper;
+        this.collectMapper = collectMapper;
+        this.collectionPaymentRecordRepo = collectionPaymentRecordRepo;
         this.orderRepository = orderRepository;
         this.webClientBuilder = webClientBuilder;
         this.webClient = webClientBuilder.build(); 
     }
 
     public List<ItemCollectionDTO> findByCounterpartAndCompany(String counterpart, String companyId) {
-        WebClient webClient = this.webClientBuilder.baseUrl("http://localhost:8080/api/v1/companies").build();
+        WebClient webClient = this.webClientBuilder.baseUrl("http://localhost:9090/company-microservice/api/v1/companies").build();
         CompanyDTO company = webClient.get()
                 .uri("/{uniqueId}", companyId)
                 .accept(MediaType.APPLICATION_JSON)
@@ -81,6 +98,7 @@ public class ItemCollectionService {
 
     public void createItemCollection(ItemCollectionDTO dto) {
         ItemCollection itemCollection = this.itemCollectionMapper.toPersistence(dto);
+        itemCollection.setItemCommissionId(35);
         ItemCollection savedItemCollection = this.itemCollectionRepository.save(itemCollection);
         log.info("Se creo la orden: {}", savedItemCollection);
     }
@@ -202,4 +220,55 @@ public class ItemCollectionService {
         }
         return uniqueId;
     }
+
+    
+    @Transactional
+    public CollectionPaymentRecordDTO processPayment(Integer itemCollectionId, String codeInternal) {
+        log.info("Iniciando procesamiento del recaudo...");
+        ItemCollectionDTO itemCollectioDto = this.obtainItemCollectionById(itemCollectionId);
+        ItemCollection itemCollection = this.itemCollectionRepository.findById(itemCollectioDto.getId())
+                .orElseThrow(() -> new RuntimeException("No se encontro la orden con el ID " + itemCollectioDto.getId()));
+        Order order = this.orderRepository.findById(itemCollectioDto.getOrderId()).orElseThrow(() -> new RuntimeException("No se encontro la orden con el ID "));;
+        log.info("Iniciando transaccion del recaudo...");
+        /*WebClient webClient = WebClient.builder().baseUrl("http://localhost:8080/Account-Microservice/api/v1/account-transactions").build();
+        AccountTransactionPaymentDTO transactionDTO = AccountTransactionPaymentDTO.builder()
+                    .accountId(47)
+                    .codeChannel("CHA007363")
+                    .transactionType("CRE")
+                    .reference("Recaudo en Ventanilla")
+                    .amount(itemCollection.getCollectionAmount())
+                    .creditorAccount(codeInternal)
+                    .debitorAccount("No Aplica (Ventanilla)")
+                    .comission(BigDecimal.valueOf(0.4))
+                    .parentTransactionKey(null)
+                    .amountCollected(itemCollection.getCollectionAmount())
+                    .build();*/
+        /*Mono<AccountTransactionPaymentDTO> responseMono = webClient.post()
+                        .uri("")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .bodyValue(transactionDTO)
+                        .retrieve()
+                        .bodyToMono(AccountTransactionDTO.class);*/
+        
+        
+        itemCollection.setStatus("PAG");
+
+        CollectionPaymentRecord collectionPaymentRecord = new CollectionPaymentRecord();
+        collectionPaymentRecord.setItemCollectionId(itemCollection.getId());
+        collectionPaymentRecord.setUniqueId(this.generateUniqueId());
+        collectionPaymentRecord.setItemCollection(itemCollection);
+        collectionPaymentRecord.setItemCommissionId(35);
+        collectionPaymentRecord.setCollectionAmount(itemCollection.getCollectionAmount());
+        collectionPaymentRecord.setPaymentType("TOT");
+        collectionPaymentRecord.setPaymentDate(LocalDateTime.now());
+        collectionPaymentRecord.setOutstandingBalance(BigDecimal.valueOf(0.00));
+        collectionPaymentRecord.setChannel("VEN");
+        this.itemCollectionRepository.save(itemCollection);
+        this.collectionPaymentRecordRepo.save(collectionPaymentRecord);
+        log.info("Registro del recaudo guardado para item {}.", itemCollection.getId());
+        CollectionPaymentRecordDTO collectionPaymentRecordDTO = this.collectMapper.toDTO(collectionPaymentRecord);
+        return collectionPaymentRecordDTO;
+        
+    }
+    
 }
