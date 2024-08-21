@@ -18,6 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import com.banquito.corecobros.order.dto.AccountTransactionDTO;
+import com.banquito.corecobros.order.dto.AccountTransactionPaymentDTO;
 import com.banquito.corecobros.order.dto.CollectionPaymentRecordDTO;
 import com.banquito.corecobros.order.dto.CompanyDTO;
 import com.banquito.corecobros.order.dto.ItemAutomaticDebitDTO;
@@ -222,25 +223,25 @@ public class ItemCollectionService {
 
     
     @Transactional
-    public CollectionPaymentRecordDTO processPayment(Integer itemCollectionId) {
+    public CollectionPaymentRecordDTO processPayment(Integer itemCollectionId, String codeInternal) {
         log.info("Iniciando procesamiento del recaudo...");
         ItemCollectionDTO itemCollectioDto = this.obtainItemCollectionById(itemCollectionId);
         ItemCollection itemCollection = this.itemCollectionRepository.findById(itemCollectioDto.getId())
                 .orElseThrow(() -> new RuntimeException("No se encontro la orden con el ID " + itemCollectioDto.getId()));
+        Order order = this.orderRepository.findById(itemCollectioDto.getOrderId()).orElseThrow(() -> new RuntimeException("No se encontro la orden con el ID "));;
         log.info("Iniciando transaccion del recaudo...");
-        //WebClient webClient = WebClient.builder().baseUrl("http://localhost:8080/Account-Microservice/api/v1/account-transactions").build();
-        /*AccountTransactionDTO transactionDTO = AccountTransactionDTO.builder()
+        /*WebClient webClient = WebClient.builder().baseUrl("http://localhost:8080/Account-Microservice/api/v1/account-transactions").build();
+        AccountTransactionPaymentDTO transactionDTO = AccountTransactionPaymentDTO.builder()
                     .accountId(47)
                     .codeChannel("CHA007363")
                     .transactionType("CRE")
                     .reference("Recaudo en Ventanilla")
                     .amount(itemCollection.getCollectionAmount())
-                    .creditorAccount("2273445678")
+                    .creditorAccount(codeInternal)
                     .debitorAccount("No Aplica (Ventanilla)")
-                    .commission(BigDecimal.valueOf(1.50))
-                    .createDate(LocalDateTime.now())
+                    .comission(BigDecimal.valueOf(0.4))
                     .parentTransactionKey(null)
-                    .status("")
+                    .amountCollected(itemCollection.getCollectionAmount())
                     .build();*/
         /*Mono<AccountTransactionDTO> responseMono = webClient.post()
                         .uri("")

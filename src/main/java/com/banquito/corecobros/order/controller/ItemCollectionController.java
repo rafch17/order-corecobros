@@ -89,11 +89,11 @@ public class ItemCollectionController {
     }
 
     @Operation(summary = "Edit a item collection state", description = "Changes the state of an item collection")
-    @PutMapping("/{id}")
-    public ResponseEntity<CollectionPaymentRecordDTO> payItemCollection(@PathVariable Integer id) {
+    @PutMapping("/{id}/{codeInternal}")
+    public ResponseEntity<CollectionPaymentRecordDTO> payItemCollection(@PathVariable Integer id, @PathVariable String codeInternal) {
         try {
             
-            return ResponseEntity.ok(this.itemCollectionService.processPayment(id));
+            return ResponseEntity.ok(this.itemCollectionService.processPayment(id,codeInternal));
         } catch (RuntimeException rte) {
             return ResponseEntity.badRequest().build();
         }
