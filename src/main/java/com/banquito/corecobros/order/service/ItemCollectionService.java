@@ -243,7 +243,7 @@ public class ItemCollectionService {
                     .parentTransactionKey(null)
                     .amountCollected(itemCollection.getCollectionAmount())
                     .build();*/
-        /*Mono<AccountTransactionDTO> responseMono = webClient.post()
+        /*Mono<AccountTransactionPaymentDTO> responseMono = webClient.post()
                         .uri("")
                         .contentType(MediaType.APPLICATION_JSON)
                         .bodyValue(transactionDTO)
