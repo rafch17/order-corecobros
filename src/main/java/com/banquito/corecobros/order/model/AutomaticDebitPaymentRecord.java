@@ -31,8 +31,8 @@ public class AutomaticDebitPaymentRecord {
     private Integer id;
     @Column(name = "ITEM_AUTOMATIC_DEBIT_ID")
     private Integer itemAutomaticDebitId;
-    @Column(name = "ITEM_COMMISSION_ID")
-    private Integer itemCommissionId;
+    // @Column(name = "ITEM_COMMISSION_ID")
+    // private Integer itemCommissionId;
     @Column(name = "UNIQUE_ID", length = 100)
     private String uniqueId;
     @Column(name = "OUTSTANDING_BALANCE", precision = 17, scale = 2)
@@ -79,7 +79,5 @@ public class AutomaticDebitPaymentRecord {
             return false;
         return true;
     }
-
-    
 
 }

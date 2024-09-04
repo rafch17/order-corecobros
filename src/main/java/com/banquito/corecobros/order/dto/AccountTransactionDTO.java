@@ -2,12 +2,14 @@ package com.banquito.corecobros.order.dto;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.io.Serializable;
 
 import lombok.Builder;
 import lombok.Value;
+
 @Value
 @Builder
-public class AccountTransactionDTO {
+public class AccountTransactionDTO implements Serializable {
     private Integer accountId;
     private String codeChannel;
     private BigDecimal amount;
@@ -18,10 +20,8 @@ public class AccountTransactionDTO {
     private BigDecimal comission;
     private String parentTransactionKey;
 
-    //RESPONSE
+    // RESPONSE
     private LocalDateTime createDate;
     private String status;
     private BigDecimal pendiente;
-
-    
 }
