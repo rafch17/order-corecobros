@@ -3,8 +3,8 @@
 # docker-compose up -d --build
 
 FROM eclipse-temurin:21-jre-alpine
-COPY build/libs/order-V1.jar /app/order-V1.jar
-ENTRYPOINT [ "java", "-jar", "order-V1.jar" ]
+COPY build/libs/order-V2.jar /app/order-V2.jar
+ENTRYPOINT [ "java", "-jar", "order-V2.jar" ]
 EXPOSE 8080
 RUN apk --update --no-cache add curl
 HEALTHCHECK --interval=1m --timeout=30s --start-period=5s --retries=3 \
