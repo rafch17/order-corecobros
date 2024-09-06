@@ -68,7 +68,7 @@ public class ItemCollectionService {
 
     public List<ItemCollectionDTO> findByCounterpartAndCompany(String counterpart, String companyId) {
         WebClient webClient = this.webClientBuilder
-                .baseUrl("http://localhost:9090/company-microservice/api/v1/companies").build();
+                .baseUrl("https://company-corecobros-production.up.railway.app/company-microservice/api/v1/companies").build();
         CompanyDTO company = webClient.get()
                 .uri("/{uniqueId}", companyId)
                 .accept(MediaType.APPLICATION_JSON)
