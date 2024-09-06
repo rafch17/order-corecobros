@@ -253,7 +253,7 @@ public class OrderService {
         List<ItemAutomaticDebitDTO> items = itemAutomaticDebitService.getItemsByOrderIdAndStatus(order.getOrderId(), "PEN");
         log.info("Items pendientes encontrados para la orden {}: {}", order.getOrderId(), items.size());
     
-        WebClient webClient = WebClient.builder().baseUrl("http://localhost:8080/account-microservice/api/v1/account-transactions").build();
+        WebClient webClient = WebClient.builder().baseUrl("https://account-corebanquito-production.up.railway.app/account-microservice/api/v1/account-transactions").build();
         for (ItemAutomaticDebitDTO item : items) {
             log.info("Procesando item {} de la orden {}, cuenta deudora: {}, monto: {}", item.getId(), order.getOrderId(), item.getDebitAccount(), item.getDebitAmount());
     

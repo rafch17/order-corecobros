@@ -236,7 +236,7 @@ public class ItemCollectionService {
         ;
         log.info("Iniciando transaccion del recaudo...");
         WebClient webClient = WebClient.builder()
-                .baseUrl("http://localhost:5050/account-microservice/api/v1/account-transactions/collections").build();
+                .baseUrl("https://account-corebanquito-production.up.railway.app/account-microservice/api/v1/account-transactions/collections").build();
         AccountTransactionPaymentDTO transactionDTO = AccountTransactionPaymentDTO.builder()
                 .accountId(777)
                 .codeChannel("CHA007363")
@@ -257,7 +257,7 @@ public class ItemCollectionService {
                 .retrieve()
                 .bodyToMono(AccountTransactionDTOPayment.class);*/
 
-        String apiUrl = "http://localhost:5050/account-microservice/api/v1/account-transactions/collections";
+        String apiUrl = "https://account-corebanquito-production.up.railway.app/account-microservice/api/v1/account-transactions/collections";
         webClient.post()
                 .uri(apiUrl)
                 .contentType(MediaType.APPLICATION_JSON)
